@@ -1,0 +1,168 @@
+{   "audio":"audios/AudioFinal2.mp3",
+    "modelo":"modelos/modelo0.glb",
+    "fondo":"rgb(6, 6, 12)",
+    "data" :
+        [ 
+           {
+                "tiempo":"00:00",
+                "duracion":0,
+                "camara":[8 , 8, -4],
+                "target":[7, 18, -4],
+                "nombre":"bosque"
+           },
+           {
+               "tiempo":"00:01",
+               "duracion":20000,
+               "camara":[8,12,-4],
+               "target":[-10,8,-4],
+               "nombre":"bosque 1.1"
+          },
+          {
+               "tiempo":"00:16",
+               "duracion":0,
+               "camara":[-7,11,-7],
+               "target":[0,4,-4],
+               "nombre":"bosque 2"
+          },
+          {
+               "tiempo":"00:17",
+               "duracion":20000,
+               "camara":[-7,11,-7],
+               "target":[0,4,6],
+               "nombre":"bosque 2.1"
+          },
+          {
+               "tiempo":"00:24",
+               "duracion":0,
+               "camara":[0.2,-5.5, -1.5],
+               "target":[1,-5.5,-5],
+               "nombre":"puerta"
+          },
+          {
+               "tiempo":"00:27",
+               "duracion":0,
+               "camara":[0,-5.5,0],
+               "target":[-360,-50,-5],
+               "nombre":"sucio"
+          },
+          {
+               "tiempo":"00:36",
+               "duracion":0,
+               "camara":[-1,-5.5, -0.4],
+               "target":[-2,-5.5,5],
+               "nombre":"imagenes de la madre"
+          },
+          {
+               "tiempo":"00:37",
+               "duracion":10000,
+               "camara":[-1,-5.5, -0.2],
+               "target":[-2, -5.5, 5],
+               "nombre":"imagenes de la madre 2"
+          },
+          {
+               "tiempo":"00:50",
+               "duracion":3000,
+               "camara":[0,-5.5,-2],
+               "target":[8,-5.5,5],
+               "nombre":"ventana"
+          },
+          {
+               "tiempo":"01:04",
+               "duracion":3000,
+               "camara":[0.2,-5.5, -1.5],
+               "target":[1,-5.5,-5],
+               "nombre":"puerta 2"
+          },
+          {
+               "tiempo":"01:10",
+               "duracion":10000,
+               "camara":[-0.5,-5, -2],
+               "target":[-7,-15,5],
+               "nombre":"altar"
+          },
+          {
+               "tiempo":"01:20",
+               "duracion":10000,
+               "camara":[-0,-5, -2],
+               "target":[-7,-15,5],
+               "nombre":"altar2"
+          },
+          {
+               "tiempo":"01:36",
+               "duracion":20000,
+               "camara":[-0,-4.5, -2],
+               "target":[7,-4.5,5],
+               "nombre":"dudas"
+          },
+          {
+               "tiempo":"01:56",
+               "duracion":0,
+               "camara":[-12,11,-3],
+               "target":[0,4,-4],
+               "nombre":"jason"
+          },
+          {
+               "tiempo":"02:04",
+               "duracion":0,
+               "camara":[-0.5,-5, -2],
+               "target":[-7,-15,5],
+               "nombre":"cabeza"
+          },
+          {
+               "tiempo":"02:10",
+               "duracion":10000,
+               "camara":[-0.5,-5, -2],
+               "target":[7,-6,5],
+               "nombre":"pensar"
+          },
+          {
+               "tiempo":"02:15",
+               "duracion":0,
+               "camara":[1.1, -1.5, -2.5 ],
+               "target":[-2,-1.8,0],
+               "nombre":"se cambia"
+          },
+          {
+               "tiempo":"02:27",
+               "duracion":0,
+               "camara":[-0.8, -1.3 , -2.9 ],
+               "target":[12,-1.8,5],
+               "nombre":"se encuentran"
+          },
+          {
+               "tiempo":"02:34",
+               "duracion":3000,
+               "camara":[0.1, -1.4, -1.3 ],
+               "target":[5.5,-1.8,-10],
+               "nombre":"cine puro"
+          },
+          {
+               "tiempo":"02:39",
+               "duracion":5000,
+               "camara":[-0.8, -1.3 , -2.9 ],
+               "target":[12,-1.8,5],
+               "nombre":"le habla"
+          },
+          {
+               "tiempo":"02:57",
+               "duracion":3000,
+               "camara":[-0.7, -1.7, -0.1],
+               "target":[5.5,-1.8,-5],
+               "nombre":"machete"
+          },
+          {
+               "tiempo":"03:10",
+               "duracion":3000,
+               "camara":[0.6,-1.2,-2.3],
+               "target":[-9,-5,5],
+               "nombre":"mira al altar"
+          },
+          {
+               "tiempo":"03:13",
+               "duracion":3000,
+               "camara":[0.1,-1.1,-1.3],
+               "target":[5.5,-1.8,-10],
+               "nombre":"jason se da cuenta"
+          }
+      ]
+}
