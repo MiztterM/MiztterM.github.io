@@ -1,0 +1,70 @@
+{   "audio":"audios/AudioFinal2.mp3",
+    "modelo":"modelos/modelo0.glb",
+    "fondo":"rgb(8,8,10)",
+    "data" :
+        [ 
+           {
+                "tiempo":"00:00",
+                "duracion":0,
+                "camara":[8,8,-4],
+                "target":[-10,-10,-4],
+                "nombre":"vista uno"
+           },
+           {
+               "tiempo":"00:01",
+               "duracion":20000,
+               "camara":[8,12,-4],
+               "target":[-10,8,-4],
+               "nombre":"vista dos"
+          },
+          {
+               "tiempo":"00:16",
+               "duracion":0,
+               "camara":[-7,11,-7],
+               "target":[0,4,-4],
+               "nombre":"vista dos"
+          },
+          {
+               "tiempo":"00:17",
+               "duracion":20000,
+               "camara":[-7,11,-7],
+               "target":[0,4,6],
+               "nombre":"vista dos"
+          },
+          {
+               "tiempo":"00:24",
+               "duracion":0,
+               "camara":[0,-5.5,-2],
+               "target":[1,-5.5,-5],
+               "nombre":"vista dos"
+          },
+          {
+               "tiempo":"00:27",
+               "duracion":0,
+               "camara":[0,2.5,-2],
+               "target":[1,-5.5,-5],
+               "nombre":"vista dos"
+          },
+          {
+               "tiempo":"00:36",
+               "duracion":0,
+               "camara":[0,-5.5,-2],
+               "target":[-200,-5.5,5],
+               "nombre":"vista dos"
+          },
+          {
+               "tiempo":"00:37",
+               "duracion":20000,
+               "camara":[0,-5.5,-2],
+               "target":[0,-5.5,5],
+               "nombre":"vista dos"
+          },
+          {
+               "tiempo":"00:50",
+               "duracion":3000,
+               "camara":[0,-5.5,-2],
+               "target":[8,-5.5,5],
+               "nombre":"vista dos"
+          }
+      ]
+}
