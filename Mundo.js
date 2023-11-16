@@ -36,11 +36,12 @@ export class Mundo{
 		this.controls.maxDistance = 1000;
     }
     iluminar(){
-        //this.escena.add( new THREE.AmbientLight( 0xffffff ) );
-        var luzd = new THREE.DirectionalLight( 0xffddcc, 1 );
+        this.escena.add( new THREE.AmbientLight( 0xffffff, 2 ) );
+        var luzd = new THREE.DirectionalLight( 0xa1a1ff, 15 );
         luzd.position.set( 1, 0.75, 0.5 );
         this.escena.add( luzd );
-        var lud2 = new THREE.DirectionalLight( 0xccccff, 1 );
+	    
+        var lud2 = new THREE.DirectionalLight( 0xa1a1ff, 0.5 );
         lud2.position.set( - 1, 0.75, - 0.5 );
         this.escena.add( lud2 );
         this.renderizador.back
