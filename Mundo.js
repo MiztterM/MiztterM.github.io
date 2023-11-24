@@ -41,7 +41,7 @@ export class Mundo{
         luzd.position.set( 1, 0.75, 0.5 );
         this.escena.add( luzd );
 	    
-        var lud2 = new THREE.DirectionalLight( 0xa1a1ff, 0.5 );
+        var lud2 = new THREE.DirectionalLight( 0xa1a1ff, 5.5 );
         lud2.position.set( - 1, 0.75, - 0.5 );
         this.escena.add( lud2 );
         this.renderizador.back
