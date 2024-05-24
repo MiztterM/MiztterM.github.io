@@ -56,13 +56,14 @@
       <img src="/assets/img/abajoseccion.png" alt="diseño seccion abajo" draggable="false">
 
       <p>Desde su primera edición en 1916, la <peso>Copa América</peso> ha sido un escenario donde han nacido leyendas,
-        se han vivido
-        momentos inolvidables y se ha celebrado la pasión por el deporte más popular del mundo.</p>
+        se han vivido momentos inolvidables y se ha celebrado la pasión por el deporte más popular del mundo.</p>
 
-      <video width="1440" height="auto" controls muted autoplay loop>
-        <source src="/assets/videos/prueba.mp4" type="video/mp4">
-        Tu navegador no puede reproducir videos.
-      </video>
+      <div class="video-container">
+        <iframe width="1440" height="auto" src="https://www.youtube.com/embed/LTaMpMZ-yfE" title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
     </div>
 
     <div class="timer">
@@ -160,6 +161,7 @@
 
     <!-- SCROLL DE IMÁGENES (NO TOCAR!!)-->
     <script>
+
       // Mostrar la información de Argentina por defecto al cargar la página
       window.onload = function () {
         const divArgentina = document.querySelector('.paises .arg.info');
@@ -173,27 +175,57 @@
       let isDragging = false;
       let startPosition = 0;
       let scrollLeft = 0;
+      let velocity = 0;
+      let lastPosition = 0;
+      let isScrolling = false;
 
-      // Inicio del arrastre
-      slider.addEventListener('mousedown', (e) => {
+      // Inicio del arrastre (eventos de ratón y táctiles)
+      slider.addEventListener('mousedown', startDragging);
+      slider.addEventListener('touchstart', startDragging);
+
+      function startDragging(e) {
         isDragging = true;
-        startPosition = e.clientX - slider.offsetLeft;
+        startPosition = e.clientX || e.touches[0].clientX - slider.offsetLeft;
         scrollLeft = slider.scrollLeft;
-      });
+        lastPosition = scrollLeft;
+        velocity = 0;
+      }
 
-      // Fin del arrastre
-      slider.addEventListener('mouseup', () => {
-        isDragging = false;
-      });
+      // Movimiento del arrastre (eventos de ratón y táctiles)
+      slider.addEventListener('mousemove', drag);
+      slider.addEventListener('touchmove', drag);
 
-      // Movimiento del arrastre
-      slider.addEventListener('mousemove', (e) => {
+      function drag(e) {
         if (!isDragging) return;
         e.preventDefault();
-        const mouseX = e.clientX - slider.offsetLeft;
+        const mouseX = e.clientX || e.touches[0].clientX;
         const distance = mouseX - startPosition;
         slider.scrollLeft = scrollLeft - distance;
-      });
+        velocity = slider.scrollLeft - lastPosition;
+        lastPosition = slider.scrollLeft;
+      }
+
+      // Fin del arrastre (eventos de ratón y táctiles)
+      slider.addEventListener('mouseup', stopDragging);
+      slider.addEventListener('mouseleave', stopDragging);
+      slider.addEventListener('touchend', stopDragging);
+
+      function stopDragging() {
+        isDragging = false;
+        isScrolling = true;
+        requestAnimationFrame(scrollAnimation);
+      }
+
+      function scrollAnimation() {
+        if (!isScrolling) return;
+        slider.scrollLeft += velocity;
+        velocity *= 0.95; // Frenado gradual
+        if (Math.abs(velocity) > 0.5) {
+          requestAnimationFrame(scrollAnimation);
+        } else {
+          isScrolling = false;
+        }
+      }
 
       // Salida del área del slider
       slider.addEventListener('mouseleave', () => {
@@ -331,7 +363,7 @@
 
   <!-- Tercera sección: Beneficios -->
   <div class="seccion3">
-    
+
     <div class="titulo">
 
       <h2>BENEFICIOS</h2>
@@ -362,21 +394,21 @@
 
       <main class="cards">
 
-        <section class="card contact">
+        <section class="card 1">
           <div class="icon">
             <img src="assets/img/ilustracion1.png" alt="servicio para paises participantes" draggable="false">
           </div>
           <span>Servicio para todos los países participantes</span>
         </section>
 
-        <section class="card shop">
+        <section class="card 2">
           <div class="icon">
             <img src="assets/img/ilustracion2.png" alt="acceso exclusivo" draggable="false">
           </div>
           <span>Acceso a noticias y contenido exclusivo</span>
         </section>
 
-        <section class="card about">
+        <section class="card 3">
           <div class="icon">
             <img src="/assets/img/ilustracion3.png" alt="actualizaciones y novedades" draggable="false">
           </div>
