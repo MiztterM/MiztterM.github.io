@@ -153,8 +153,8 @@ html {
   @media screen and (max-width: 500px) {
     justify-content: center;
     text-align: center;
-    font-size: 100%;
-    padding: 7% 18%;
+    font-size: 125%;
+    padding: 7% 15%;
 
   }
 
@@ -251,15 +251,29 @@ html {
     margin-right: 20px;
 
   }
+}
 
-  @media screen and (max-width: 425px) {
-    font-size: 8px;
-    text-align: left;
-    justify-content: center;
-    margin-right: 0%;
-    margin-bottom: 40px;
 
+@media screen and (max-width: 500px) {
+  .principal h2 {
+  font-size: 18px;
+  text-align: left;
+  justify-content: center;
+  margin-right: 0%;
+  margin-bottom: 40px;
   }
+
+}
+
+@media screen and (max-width: 374px) {
+  .principal h2 {
+  font-size: 16px;
+  text-align: left;
+  justify-content: center;
+  margin-right: 0%;
+  margin-bottom: 40px;
+  }
+
 }
 
 .titulo {
@@ -337,11 +351,28 @@ p peso {
 }
 
 
-.titulo video {
+.titulo iframe {
   align-self: center;
   justify-self: center;
-  height: auto;
+  height: 200%;
   width: 80%;
+}
+
+.video-container {
+  position: relative;
+  width: 80%;
+  margin: 0 auto;
+  padding-bottom: 45%;
+  height: 0;
+  overflow: hidden;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /* CONTADOR */
@@ -398,7 +429,6 @@ p peso {
   font-weight: 400;
 }
 
-/* Media Query for responsiveness */
 @media (max-width: 768px) {
 
   .logocopa img {
@@ -447,7 +477,7 @@ p peso {
 
 
 .slider {
-  overflow-x: hidden;
+  overflow-x:hidden;
   /* Desplazamiento horizontal */
   white-space: nowrap;
   padding-bottom: 1%;
@@ -577,6 +607,7 @@ p peso {
   }
 
   .contenidosec3 {
+    margin: 2% 0%;
     width: 80%;
     max-width: 1170px;
     display: grid;
@@ -588,7 +619,6 @@ p peso {
     font-size: 60%;
     font-family: 'Heebo', sans-serif;
     font-weight: 400;
-    margin: 2%;
   }
 
 }
@@ -600,6 +630,7 @@ p peso {
 main.cards {
   display: flex;
   padding: 5% 10%;
+  justify-content: center;
 }
 
 main.cards section.card {
@@ -626,7 +657,6 @@ main.cards section.card .icon {
 main.cards section.card img {
   width: 100%;
 }
-
 
 main.cards section.card span {
   font-weight: 300;
@@ -1163,6 +1193,25 @@ main.cards section.card span {
     font-family: 'Heebo', sans-serif;
     font-weight: 400;
     font-size: 2%;
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .avisolegal {
+    display: flex;
+    background-color: #000;
+    justify-content: center;
+  }
+
+  .avisolegal p {
+    margin: 1.5% 5.5%;
+    text-align: center;
+    color: #fff;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 400;
+    font-size: 1%;
   }
 
 }
