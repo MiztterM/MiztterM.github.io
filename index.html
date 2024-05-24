@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Marca -->
+  <title>Olé - Vibra el Continente</title>
+  <link rel="icon" href="/assets/img/icono.svg" type="image/svg">
+
+  <!-- Cargar css -->
+  <link rel="stylesheet" href="/styles/estilos.css">
+  <!-- Cargar js -->
+  <script src="https://code.jquery.com/jquery-3.6.4.js" integrity="sha256-a9jBBRygX1Bh5lt8GZjXDzyOB+bWve9EiO7tROUtj/E="
+    crossorigin="anonymous"></script>
+  <script src="/js/index.js"></script>
+
+  <!-- Tipografía: Noto Sans Display -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+Display:wght@400;700;900&display=swap">
+  <!-- Tipografía: Heebo -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Heebo:wght@400;600;700;800;900&display=swap">
+
+
+</head>
+
+<body>
+
+  <!-- Logo y color de fondo -->
+  <header class="encabezado">
+    <a href="https://www.ole.com.ar/" target="_blank"><img src="/assets/img/logo.svg" alt="Logo Olé" draggable="false">
+    </a>
+  </header>
+
+  <!-- Secciones -->
+  <div class="contenido">
+
+    <!-- Título, Subtítulo, CTA e Imagen -->
+    <div class="principal">
+      <h1>VIBRA EL CONTINENTE</h1>
+      <h2>Infórmate de cada detalle y cada novedad de tu selección de cara a la próxima Copa América. ¡Recibe las
+        últimas noticias directamente en tu correo electrónico, personalizadas para la selección que elegiste!</h2>
+      <a href="#" class="cta">¡ELIGE TU SELECCIÓN! </a>
+    </div>
+
+  </div>
+
+  <!-- Primera sección: Copa América -->
+  <div class="seccion1">
+
+    <div class="titulo">
+
+      <h2>COPA AMÉRICA</h2>
+      <img src="/assets/img/abajoseccion.png" alt="diseño seccion abajo" draggable="false">
+
+      <p>Desde su primera edición en 1916, la <peso>Copa América</peso> ha sido un escenario donde han nacido leyendas,
+        se han vivido momentos inolvidables y se ha celebrado la pasión por el deporte más popular del mundo.</p>
+
+      <div class="video-container">
+        <iframe width="1440" height="auto" src="https://www.youtube.com/embed/LTaMpMZ-yfE" title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="timer">
+
+      <div class="logocopa">
+        <img src="/assets/img/logocopa.png" alt="logo copa américa">
+      </div>
+
+      <!-- CUENTA ATRAS - (NO TOCAR!!)-->
+
+      <div class="countdown">
+        <div class="num" id="dias"></div>
+        <div class="texto">días</div>
+      </div>
+      <div class="countdown">
+        <div class="num" id="horas"></div>
+        <div class="texto">horas</div>
+      </div>
+      <div class="countdown">
+        <div class="num" id="minutos"></div>
+        <div class="texto">minutos</div>
+      </div>
+      <div class="countdown">
+        <div class="num" id="segundos"></div>
+        <div class="texto">segundos</div>
+      </div>
+
+      <script>
+        // Fecha
+        var cuentaatras = new Date("Jun 20, 2024 21:00:00").getTime();
+
+        // Bajar cada 1 seg
+        var x = setInterval(function () {
+
+          // Obtener día y fecha de hoy
+          var now = new Date().getTime();
+
+          // Encontrar distancia entre ahora y la fecha
+          var distancia = cuentaatras - now;
+
+          // Calculo de dias, horas, minutos y segundos
+          var dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
+          var horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          var minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
+          var segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+
+          // Tener resultado en un elemento con id="tiempo"
+          document.getElementById("dias").innerHTML = dias;
+          document.getElementById("horas").innerHTML = horas;
+          document.getElementById("minutos").innerHTML = minutos;
+          document.getElementById("segundos").innerHTML = segundos;
+
+          // Si se termina ese tiempo, que salga un msj - esto no funciona pero es indiferente ahora
+          if (distancia < 0) {
+            clearInterval(x);
+            document.getElementById("tiempo").innerHTML = "Comenzó la Copa América!";
+          }
+        }, 1000);
+      </script>
+
+    </div>
+  </div>
+
+  <!-- Segunda sección: Selecciones -->
+  <div class="seccion2">
+
+
+    <div class="titulo">
+
+      <h2>SELECCIONES</h2>
+
+      <img src="/assets/img/abajoseccion.png" alt="diseño seccion abajo" draggable="false">
+
+      <div class="slider" id="slider">
+        <div class="slide"><img id="arg" src="/assets/img/paises/ARG.png" data-seleccion="arg" draggable="false"></div>
+        <div class="slide"><img id="per" src="/assets/img/paises/PER.png" data-seleccion="per" draggable="false"></div>
+        <div class="slide"><img id="chi" src="/assets/img/paises/CHI.png" data-seleccion="chi" draggable="false"></div>
+        <div class="slide"><img id="can" src="/assets/img/paises/CAN.png" data-seleccion="can" draggable="false"></div>
+        <div class="slide"><img id="mex" src="/assets/img/paises/MEX.png" data-seleccion="mex" draggable="false"></div>
+        <div class="slide"><img id="ecu" src="/assets/img/paises/ECU.png" data-seleccion="ecu" draggable="false"></div>
+        <div class="slide"><img id="ven" src="/assets/img/paises/VEN.png" data-seleccion="ven" draggable="false"></div>
+        <div class="slide"><img id="jam" src="/assets/img/paises/JAM.png" data-seleccion="jam" draggable="false"></div>
+        <div class="slide"><img id="usa" src="/assets/img/paises/USA.png" data-seleccion="usa" draggable="false"></div>
+        <div class="slide"><img id="uru" src="/assets/img/paises/URU.png" data-seleccion="uru" draggable="false"></div>
+        <div class="slide"><img id="pan" src="/assets/img/paises/PAN.png" data-seleccion="pan" draggable="false"></div>
+        <div class="slide"><img id="bol" src="/assets/img/paises/BOL.png" data-seleccion="bol" draggable="false"></div>
+        <div class="slide"><img id="bra" src="/assets/img/paises/BRA.png" data-seleccion="bra" draggable="false"></div>
+        <div class="slide"><img id="col" src="/assets/img/paises/COL.png" data-seleccion="col" draggable="false"></div>
+        <div class="slide"><img id="par" src="/assets/img/paises/PAR.png" data-seleccion="par" draggable="false"></div>
+        <div class="slide"><img id="crc" src="/assets/img/paises/CRC.png" data-seleccion="crc" draggable="false"></div>
+
+      </div>
+
+    </div>
+
+    <!-- SCROLL DE IMÁGENES (NO TOCAR!!)-->
+    <script>
+
+      // Mostrar la información de Argentina por defecto al cargar la página
+      window.onload = function () {
+        const divArgentina = document.querySelector('.paises .arg.info');
+        divArgentina.style.display = 'block';
+      };
+
+      // Contenedor del slider
+      const slider = document.getElementById('slider');
+
+      // Variables
+      let isDragging = false;
+      let startPosition = 0;
+      let scrollLeft = 0;
+      let velocity = 0;
+      let lastPosition = 0;
+      let isScrolling = false;
+
+      // Inicio del arrastre (eventos de ratón y táctiles)
+      slider.addEventListener('mousedown', startDragging);
+      slider.addEventListener('touchstart', startDragging);
+
+      function startDragging(e) {
+        isDragging = true;
+        startPosition = e.clientX || e.touches[0].clientX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+        lastPosition = scrollLeft;
+        velocity = 0;
+      }
+
+      // Movimiento del arrastre (eventos de ratón y táctiles)
+      slider.addEventListener('mousemove', drag);
+      slider.addEventListener('touchmove', drag);
+
+      function drag(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        const mouseX = e.clientX || e.touches[0].clientX;
+        const distance = mouseX - startPosition;
+        slider.scrollLeft = scrollLeft - distance;
+        velocity = slider.scrollLeft - lastPosition;
+        lastPosition = slider.scrollLeft;
+      }
+
+      // Fin del arrastre (eventos de ratón y táctiles)
+      slider.addEventListener('mouseup', stopDragging);
+      slider.addEventListener('mouseleave', stopDragging);
+      slider.addEventListener('touchend', stopDragging);
+
+      function stopDragging() {
+        isDragging = false;
+        isScrolling = true;
+        requestAnimationFrame(scrollAnimation);
+      }
+
+      function scrollAnimation() {
+        if (!isScrolling) return;
+        slider.scrollLeft += velocity;
+        velocity *= 0.95; // Frenado gradual
+        if (Math.abs(velocity) > 0.5) {
+          requestAnimationFrame(scrollAnimation);
+        } else {
+          isScrolling = false;
+        }
+      }
+
+      // Salida del área del slider
+      slider.addEventListener('mouseleave', () => {
+        isDragging = false;
+      });
+
+      // Cambiar el contenido al hacer clic en una imagen del slider
+      function cambiarContenidoSeleccionado(event) {
+        // Ocultar los divs de otrps paises
+        const divsPaises = document.querySelectorAll('.paises > div');
+        divsPaises.forEach(div => {
+          div.style.display = 'none';
+        });
+
+        // Obtener el id de la imagen seleccionada
+        const idSeleccionado = event.target.dataset.seleccion;
+
+        // Mostrar el div de la imagen seleccionada
+        const divSeleccionado = document.querySelector(`.paises .${idSeleccionado}`);
+        divSeleccionado.style.display = 'block';
+      }
+
+      const imagenesSlider = document.querySelectorAll('.slide img');
+
+      // Evento de clic a cada imagen del slider
+      imagenesSlider.forEach(imagen => {
+        imagen.addEventListener('click', cambiarContenidoSeleccionado);
+      });
+
+    </script>
+
+    <div class="fondosel">
+
+      <div class="paises">
+
+        <div class="arg info" style="display: none;">
+          <div class="argentina"><img src="/assets/img/paises/escudos/arg.png"></div>
+          <h2>ARGENTINA</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendarioarg.png" draggable="false"></div>
+        </div>
+
+        <div class="per info" style="display: none;">
+          <div class="peru"><img src="/assets/img/paises/escudos/per.png"></div>
+          <h2>PERÚ</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendarioper.png" draggable="false"></div>
+        </div>
+
+        <div class="chi info" style="display: none;">
+          <div class="chile"><img src="/assets/img/paises/escudos/chi.png"></div>
+          <h2>CHILE</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariochi.png" draggable="false"></div>
+        </div>
+
+        <div class="can info" style="display: none;">
+          <div class="canada"><img src="/assets/img/paises/escudos/can.png"></div>
+          <h2>CANADÁ</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariocan.png" draggable="false"></div>
+        </div>
+
+        <div class="mex info" style="display: none;">
+          <div class="mexico"><img src="/assets/img/paises/escudos/mex.png"></div>
+          <h2>MÉXICO</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariomex.png" draggable="false"></div>
+        </div>
+
+        <div class="ecu info" style="display: none;">
+          <div class="ecuador"><img src="/assets/img/paises/escudos/ecu.png"></div>
+          <h2>ECUADOR</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendarioecu.png" draggable="false"></div>
+        </div>
+
+        <div class="ven info" style="display: none;">
+          <div class="venezuela"><img src="/assets/img/paises/escudos/ven.png"></div>
+          <h2>VENEZUELA</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendarioven.png" draggable="false"></div>
+        </div>
+
+        <div class="jam info" style="display: none;">
+          <div class="jamaica"><img src="/assets/img/paises/escudos/jam.png"></div>
+          <h2>JAMAICA</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariojam.png" draggable="false"></div>
+        </div>
+
+        <div class="usa info" style="display: none;">
+          <div class="estados-unidos"><img src="/assets/img/paises/escudos/usa.png"></div>
+          <h2>ESTADOS UNIDOS</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariousa.png" draggable="false"></div>
+        </div>
+
+        <div class="uru info" style="display: none;">
+          <div class="uruguay"><img src="/assets/img/paises/escudos/uru.png"></div>
+          <h2>URUGUAY</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariouru.png" draggable="false"></div>
+        </div>
+
+        <div class="pan info" style="display: none;">
+          <div class="panama"><img src="/assets/img/paises/escudos/pan.png"></div>
+          <h2>PANAMÁ</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariopan.png" draggable="false"></div>
+        </div>
+
+        <div class="bol info" style="display: none;">
+          <div class="bolivia"><img src="/assets/img/paises/escudos/bol.png"></div>
+          <h2>BOLIVIA</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariobol.png" draggable="false"></div>
+        </div>
+
+        <div class="bra info" style="display: none;">
+          <div class="brasil"><img src="/assets/img/paises/escudos/bra.png"></div>
+          <h2>BRASIL</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariobra.png" draggable="false"></div>
+        </div>
+
+        <div class="col info" style="display: none;">
+          <div class="colombia"><img src="/assets/img/paises/escudos/col.png"></div>
+          <h2>COLOMBIA</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariocol.png" draggable="false"></div>
+        </div>
+
+        <div class="par info" style="display: none;">
+          <div class="paraguay"><img src="/assets/img/paises/escudos/par.png"></div>
+          <h2>PARAGUAY</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariopar.png" draggable="false"></div>
+        </div>
+
+        <div class="crc info" style="display: none;">
+          <div class="costa-rica"><img src="/assets/img/paises/escudos/crc.png"></div>
+          <h2>COSTA RICA</h2>
+          <div class="calendario"><img src="/assets/img/paises/calendario/calendariocrc.png" draggable="false"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Tercera sección: Beneficios -->
+  <div class="seccion3">
+
+    <div class="titulo">
+
+      <h2>BENEFICIOS</h2>
+      <img src="/assets/img/abajoseccion.png" alt="diseño seccion abajo" draggable="false">
+
+      <div class="contenidosec3">
+
+        <div class="revistas">
+          <img src="/assets/img/revistas.png" alt="revistas olé" draggable="false">
+        </div>
+
+        <div class="textosec3">
+          <p>
+            Desde hace <peso>28 años</peso> nos dedicamos a llevar a nuestros lectores lo mejor del deporte en cada
+            momento, y <peso>la Copa América no será la excepción</peso>.
+          </p>
+          <p>
+            En Olé <peso>nos comprometemos</peso> a brindar una cobertura de este torneo, abarcando desde la previa de
+            los partidos hasta los análisis posteriores, últimas noticias y los momentos más destacados.
+          </p>
+          <p>
+            Te enviaremos un mail cuando haya una noticia relacionada a la selección que elegiste, <peso>para que estés
+              siempre al tanto</peso>.
+          </p>
+        </div>
+
+      </div>
+
+      <main class="cards">
+
+        <section class="card 1">
+          <div class="icon">
+            <img src="assets/img/ilustracion1.png" alt="servicio para paises participantes" draggable="false">
+          </div>
+          <span>Servicio para todos los países participantes</span>
+        </section>
+
+        <section class="card 2">
+          <div class="icon">
+            <img src="assets/img/ilustracion2.png" alt="acceso exclusivo" draggable="false">
+          </div>
+          <span>Acceso a noticias y contenido exclusivo</span>
+        </section>
+
+        <section class="card 3">
+          <div class="icon">
+            <img src="/assets/img/ilustracion3.png" alt="actualizaciones y novedades" draggable="false">
+          </div>
+          <span>Actualizaciones y novedades de último momento</span>
+        </section>
+      </main>
+    </div>
+
+
+    <!-- CARDS ANTIGUO
+      <div class="cards">
+        <div class="card">
+          <img src="/assets/img/ilustracion1.png">
+          <div class="card-contenido">
+            <h5>Servicio para todos los países participantes</h5>
+          </div>
+        </div>
+
+        <div class="card">
+          <img src="/assets/img/ilustracion2.png">
+          <div class="card-contenido">
+            <h5>Acceso a noticias y contenido exclusivo</h5>
+          </div>
+        </div>
+
+        <div class="card">
+          <img src="/assets/img/ilustracion3.png">
+          <div class="card-contenido">
+            <h5>Actualizaciones y novedades de último momento</h5>
+          </div>
+        </div>
+      </div> -->
+
+  </div>
+
+  <!-- FORMULARIO -->
+  <div class="formulario">
+
+    <div id="tpalforms" class="info">
+      <h3>¡MANTENTE AL TANTO DE TU SELECCIÓN!</h3>
+      <div class="info-abajo">
+        <div class="info-izquierda">
+          <form id="formulario-principal" action="#">
+
+            <label class="textoFormulario" for="nombre"> Nombre</label>
+            <input class="espacioEscritura" required type="text" name="nombre" id="nombre" maxlength="12" />
+
+            <label class="textoFormulario" for="email"> Email</label>
+            <input class="espacioEscritura" required type="email" name="email" id="email" maxlength="38" />
+
+            <label class="textoFormulario" for="pais">Elige tu selección</label>
+            <select class="desplegable" name="pais" id="pais">
+              <option value="argentina">Argentina</option>
+              <option value="peruana">Perú</option>
+              <option value="chilena">Chile</option>
+              <option value="canadiense">Canadá</option>
+              <option value="mexicana">México</option>
+              <option value="ecuatoriana">Ecuador</option>
+              <option value="venezolana">Venezuela</option>
+              <option value="jamaiquina">Jamaica</option>
+              <option value="uruguaya">Uruguay</option>
+              <option value="panameña">Panamá</option>
+              <option value="boliviana">Bolivia</option>
+              <option value="brasileña">Brasil</option>
+              <option value="colombiana">Colombia</option>
+              <option value="paraguaya">Paraguay</option>
+              <option value="jamaiquina">Costa Rica</option>
+            </select>
+
+            <div class="enviarinfo">
+              <input id="botonenviar" class="botonEnviar" type="submit" value="ENVIAR" />
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- MENSAJE FORMULARIO -->
+  <div class="popup-contenedor oculto feedback">
+    <div class="popup">
+      <h2>
+        !Gracias <span id="dato-nombre">Nombre</span>!
+      </h2>
+      <p>
+        A partir de ahora, te llegarán todas las noticias de la selección <span id="dato-pais">pais</span> a <span
+          id="dato-email">nombreyapellido@mail.com.</span>
+      </p>
+      <a class="cerrar">ACEPTAR</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="logofooter">
+      <a href="index.html"><img src="/assets/img/Olé_negro.png" alt="Logo Olé" draggable="false"> </a>
+    </div>
+
+    <div class="contactos">
+      <div class="mail">
+        <img src="/assets/img/mail.png" alt="icono mail" draggable="false">
+        <a href="https://www.ole.com.ar/centro-de-ayuda.html" target="_blank">Centro de ayuda</a>
+      </div>
+      <div class="celular">
+        <img src="/assets/img/Celular.png" alt="icono celular" draggable="false">
+        <div class="celulartexto">
+          <h4>0810-333-0365 / 0800-222-2365</h4>
+          <p>Desde el exterior, +54 11 5289-0500</p>
+          <p>Lunes a viernes de 8 a 20hs.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pregfrecuen">
+      <a href="https://www.ole.com.ar/preguntas-frecuentes" target="_blank">Preguntas Frecuentes</a>
+      <a href="https://www.ole.com.ar/terminos-y-condiciones" target="_blank">Términos y condiciones</a>
+      <a href="https://www.ole.com.ar/politica-datos-personales" target="_blank">Política de protección de datos
+        personales</a>
+      <a href="https://www.argentina.gob.ar/aaip/datospersonales" target="_blank">Normas de confidencialidad y
+        privacidad</a>
+    </div>
+  </footer>
+  <footer class="footerredes">
+
+    <div class="redes">
+      <h3>NUESTRAS REDES</h3>
+      <a href="https://www.facebook.com/diarioole" target="_blank"><img src="/assets/img/redes/facebook.png"
+          alt="facebook" draggable="false"> </a>
+      <a href="https://www.instagram.com/diario.ole/" target="_blank"><img src="/assets/img/redes/instagram.png"
+          alt="instagram" draggable="false"> </a>
+      <a href="https://twitter.com/diarioole" target="_blank"><img src="/assets/img/redes/twitter.png" alt="twitter"
+          draggable="false"></a>
+      <a href="https://www.youtube.com/channel/UCNbLgXUSeGj1NOygTmpuxOQ/featured" target="_blank"><img
+          src="/assets/img/redes/youtube.png" alt="youtube" draggable="false"> </a>
+      <a href="https://www.tiktok.com/@diario.ole" target="_blank"><img src="/assets/img/redes/tiktok.png" alt="tiktok"
+          draggable="false"></a>
+      <a href="https://www.twitch.tv/diariooleok" target="_blank"><img src="/assets/img/redes/twitch.png" alt="twitch"
+          draggable="false"></a>
+    </div>
+
+  </footer>
+
+  <div class="avisolegal">
+    <p>Propietario Arte Gráfico Editorial Argentino S.A. © 1996-2024 Olé.com.ar - Todos los derechos reservados.</p>
+  </div>
+
+
+
+
+</body>
+
+</html>
