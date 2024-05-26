@@ -296,46 +296,6 @@ p peso {
   margin-bottom: 0%;
 }
 
-
-@media screen and (max-width: 540px) {
-  .titulo h2 {
-    margin-left: 10%;
-    margin-right: 10%;
-    color: #131C62;
-    font-size: 190%;
-    font-family: 'Noto Sans Display', sans-serif;
-    font-weight: 900;
-    margin-top: 80px;
-    margin-bottom: 0%;
-    text-align: center;
-  }
-
-  .titulo img[src$="/assets/img/abajoseccion.png"] {
-    display: block;
-    width: 100%;
-    margin-top: 1%;
-    margin-bottom: 2%;
-    margin-left: auto;
-    margin-right: auto;
-    transform: translateX(-50%);
-  }
-}
-
-@media screen and (max-width: 332px) {
-  .titulo h2 {
-    margin-left: 10%;
-    margin-right: 10%;
-    color: #131C62;
-    font-size: 170%;
-    font-family: 'Noto Sans Display', sans-serif;
-    font-weight: 900;
-    margin-top: 80px;
-    margin-bottom: 0%;
-    text-align: center;
-  }
-
-}
-
 .titulo p {
   margin-left: 10%;
   font-size: 90%;
@@ -356,6 +316,45 @@ p peso {
   justify-self: center;
   height: 200%;
   width: 80%;
+}
+
+@media screen and (max-width: 540px) {
+  .titulo h2 {
+    margin-left: 10%;
+    margin-right: 10%;
+    color: #131C62;
+    font-size: 190%;
+    font-family: 'Noto Sans Display', sans-serif;
+    font-weight: 900;
+    margin-top: 80px;
+    margin-bottom: 0%;
+    text-align: center;
+  }
+
+  .titulo img[src$="/assets/img/abajoseccion.png"] {
+    display: flex;
+    width: 10%;
+    margin-top: 1%;
+    margin-bottom: 2%;
+    margin-left: auto;
+    margin-right: auto;
+    transform: translateX(-30%);
+  }
+}
+
+@media screen and (max-width: 332px) {
+  .titulo h2 {
+    margin-left: 10%;
+    margin-right: 10%;
+    color: #131C62;
+    font-size: 170%;
+    font-family: 'Noto Sans Display', sans-serif;
+    font-weight: 900;
+    margin-top: 80px;
+    margin-bottom: 0%;
+    text-align: center;
+  }
+
 }
 
 .video-container {
@@ -599,19 +598,22 @@ p peso {
 }
 
 @media (max-width: 1000px) {
-  .revistas img {
-    margin-top: 2%;
-    width: 80%;
-    height: 80%;
-    object-fit: contain;
-  }
+
 
   .contenidosec3 {
-    margin: 2% 0%;
-    width: 80%;
-    max-width: 1170px;
+    margin: 1% 0;
+    width: 100%;
     display: grid;
     grid-template-columns: 1fr;
+    grid-gap: 5px;
+  }
+
+  .revistas img {
+    margin: 0 10%;
+    margin-top: 2%;
+    width: 80%;
+    height: 100%;
+    object-fit: contain;
   }
 
   .textesec3 p {
@@ -622,8 +624,6 @@ p peso {
   }
 
 }
-
-
 
 /* CARDS */
 
@@ -908,7 +908,7 @@ main.cards section.card span {
 @media screen and (max-width: 342px) {
 
   .formulario {
-    padding-bottom: 0%;
+    padding-bottom: 0px;
     padding-top: 0%;
   }
 
@@ -1048,6 +1048,129 @@ main.cards section.card span {
 
 }
 
+@media (max-width: 630px) {
+
+  .popup h2 {
+    margin-top: 2%;
+    margin-bottom: 10%;
+    font-size: 200%;
+  }
+
+  .popup p {
+    align-items: left;
+    margin: 1% 0;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 400;
+    color: #fff;
+    font-size: 70%;
+    margin-bottom: 6%;
+  }
+
+  .popup a {
+    margin-top: 4%;
+    width: 60%;
+    height: 10%;
+    border: none;
+    border-radius: 2%;
+    font-family: 'Noto Sans Display', sans-serif;
+    font-weight: 700;
+    display: inline-block;
+    background-color: #CF3141;
+    color: white;
+    text-decoration: none;
+    border-radius: 160px;
+    font-size: 100%;
+    text-decoration: none;
+    transition: background-color 0.6s;
+    text-align: center;
+    line-height: 300%;
+    cursor: pointer;
+  }
+
+}
+
+@media (max-width: 430px) {
+
+  .popup h2 {
+    margin-top: 2%;
+    margin-bottom: 10%;
+    font-size: 150%;
+  }
+
+  .popup p {
+    align-items: left;
+    margin: 1% 0;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 400;
+    color: #fff;
+    font-size: 60%;
+    margin-bottom: 6%;
+  }
+
+  .popup a {
+    margin-top: 4%;
+    width: 60%;
+    height: 10%;
+    border: none;
+    border-radius: 2%;
+    font-family: 'Noto Sans Display', sans-serif;
+    font-weight: 700;
+    display: inline-block;
+    background-color: #CF3141;
+    color: white;
+    text-decoration: none;
+    border-radius: 160px;
+    font-size: 70%;
+    text-decoration: none;
+    transition: background-color 0.6s;
+    text-align: center;
+    line-height: 300%;
+    cursor: pointer;
+  }
+
+}
+
+@media (max-width: 360px) {
+
+  .popup h2 {
+    margin-top: 2%;
+    margin-bottom: 10%;
+    font-size: 130%;
+  }
+
+  .popup p {
+    align-items: left;
+    margin: 1% -10px;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 400;
+    color: #fff;
+    font-size: 60%;
+    margin-bottom: 6%;
+  }
+
+  .popup a {
+    margin-top: 4%;
+    width: 60%;
+    height: 10%;
+    border: none;
+    border-radius: 2%;
+    font-family: 'Noto Sans Display', sans-serif;
+    font-weight: 700;
+    display: inline-block;
+    background-color: #CF3141;
+    color: white;
+    text-decoration: none;
+    border-radius: 160px;
+    font-size: 50%;
+    text-decoration: none;
+    transition: background-color 0.6s;
+    text-align: center;
+    line-height: 300%;
+    cursor: pointer;
+  }
+
+}
+
 /* FOOTER */
 
 .footer {
@@ -1072,10 +1195,12 @@ main.cards section.card span {
 }
 
 .logofooter a {
+  width: 98px;
+  height: 72px;
   display: flex;
   flex-direction: row;
-  margin-bottom: 15%;
-  margin-top: 5%;
+  margin-bottom: 1%;
+  margin-top: 15%;
 }
 
 .mail {
@@ -1161,6 +1286,60 @@ main.cards section.card span {
 
 }
 
+@media (max-width: 525px) {
+  .footer {
+    font-family: 'Heebo', sans-serif;
+    font-weight: 400;
+    display: flex;
+    justify-content: space-between;
+    margin: 2% 5%;
+    flex-wrap: wrap;
+  }
+
+  .mail img,
+  .celular img {
+    display: none;
+  }
+
+  .mail, .celular {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 15%;
+    margin-top: 15%;
+  }
+
+  .logofooter {
+    display: block;
+  }
+
+  .celulartexto {
+    margin-bottom: 6%;
+    font-size: 10%;
+  }
+
+  .redes h3{
+    margin: 5% 0%;
+    font-weight: 100px;
+  }
+
+  .redes a{
+    margin: 5% 2%;
+  }
+
+  .footerredes {
+    font-family: 'Heebo', sans-serif;
+    font-weight: 100px;
+    margin-left: 5%;
+    margin-bottom: 5%;
+  }
+
+  .footerredes img{
+    max-height: 30px;
+  }
+
+}
+
+
 /* AVISO LEGAL */
 
 .avisolegal {
@@ -1207,6 +1386,25 @@ main.cards section.card span {
 
   .avisolegal p {
     margin: 1.5% 5.5%;
+    text-align: center;
+    color: #fff;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 400;
+    font-size: 1%;
+  }
+
+}
+
+@media (max-width: 400px) {
+
+  .avisolegal {
+    display: flex;
+    background-color: #000;
+    justify-content: center;
+  }
+
+  .avisolegal p {
+    margin: 5.5% 2.5%;
     text-align: center;
     color: #fff;
     font-family: 'Heebo', sans-serif;
