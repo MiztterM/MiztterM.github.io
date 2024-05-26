@@ -73,57 +73,55 @@
       </div>
 
       <!-- CUENTA ATRAS - (NO TOCAR!!)-->
+        <div class="countdown">
+          <div class="num" id="dias"></div>
+          <div class="texto">días</div>
+        </div>
+        <div class="countdown">
+          <div class="num" id="horas"></div>
+          <div class="texto">horas</div>
+        </div>
+        <div class="countdown">
+          <div class="num" id="minutos"></div>
+          <div class="texto">minutos</div>
+        </div>
+        <div class="countdown">
+          <div class="num" id="segundos"></div>
+          <div class="texto">segundos</div>
+        </div>
 
-      <div class="countdown">
-        <div class="num" id="dias"></div>
-        <div class="texto">días</div>
-      </div>
-      <div class="countdown">
-        <div class="num" id="horas"></div>
-        <div class="texto">horas</div>
-      </div>
-      <div class="countdown">
-        <div class="num" id="minutos"></div>
-        <div class="texto">minutos</div>
-      </div>
-      <div class="countdown">
-        <div class="num" id="segundos"></div>
-        <div class="texto">segundos</div>
-      </div>
+        <script>
+          // Fecha
+          var cuentaatras = new Date("Jun 20, 2024 21:00:00").getTime();
 
-      <script>
-        // Fecha
-        var cuentaatras = new Date("Jun 20, 2024 21:00:00").getTime();
+          // Bajar cada 1 seg
+          var x = setInterval(function () {
 
-        // Bajar cada 1 seg
-        var x = setInterval(function () {
+            // Obtener día y fecha de hoy
+            var now = new Date().getTime();
 
-          // Obtener día y fecha de hoy
-          var now = new Date().getTime();
+            // Encontrar distancia entre ahora y la fecha
+            var distancia = cuentaatras - now;
 
-          // Encontrar distancia entre ahora y la fecha
-          var distancia = cuentaatras - now;
+            // Calculo de dias, horas, minutos y segundos
+            var dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
+            var horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
+            var segundos = Math.floor((distancia % (1000 * 60)) / 1000);
 
-          // Calculo de dias, horas, minutos y segundos
-          var dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
-          var horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          var minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
-          var segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+            // Tener resultado en un elemento con id="tiempo"
+            document.getElementById("dias").innerHTML = dias;
+            document.getElementById("horas").innerHTML = horas;
+            document.getElementById("minutos").innerHTML = minutos;
+            document.getElementById("segundos").innerHTML = segundos;
 
-          // Tener resultado en un elemento con id="tiempo"
-          document.getElementById("dias").innerHTML = dias;
-          document.getElementById("horas").innerHTML = horas;
-          document.getElementById("minutos").innerHTML = minutos;
-          document.getElementById("segundos").innerHTML = segundos;
-
-          // Si se termina ese tiempo, que salga un msj - esto no funciona pero es indiferente ahora
-          if (distancia < 0) {
-            clearInterval(x);
-            document.getElementById("tiempo").innerHTML = "Comenzó la Copa América!";
-          }
-        }, 1000);
-      </script>
-
+            // Si se termina ese tiempo, que salga un msj - esto no funciona pero es indiferente ahora
+            if (distancia < 0) {
+              clearInterval(x);
+              document.getElementById("tiempo").innerHTML = "Comenzó la Copa América!";
+            }
+          }, 1000);
+        </script>
     </div>
   </div>
 
@@ -138,22 +136,38 @@
       <img src="/assets/img/abajoseccion.png" alt="diseño seccion abajo" draggable="false">
 
       <div class="slider" id="slider">
-        <div class="slide"><img id="arg" src="/assets/img/paises/ARG.png" data-seleccion="arg" draggable="false"></div>
-        <div class="slide"><img id="per" src="/assets/img/paises/PER.png" data-seleccion="per" draggable="false"></div>
-        <div class="slide"><img id="chi" src="/assets/img/paises/CHI.png" data-seleccion="chi" draggable="false"></div>
-        <div class="slide"><img id="can" src="/assets/img/paises/CAN.png" data-seleccion="can" draggable="false"></div>
-        <div class="slide"><img id="mex" src="/assets/img/paises/MEX.png" data-seleccion="mex" draggable="false"></div>
-        <div class="slide"><img id="ecu" src="/assets/img/paises/ECU.png" data-seleccion="ecu" draggable="false"></div>
-        <div class="slide"><img id="ven" src="/assets/img/paises/VEN.png" data-seleccion="ven" draggable="false"></div>
-        <div class="slide"><img id="jam" src="/assets/img/paises/JAM.png" data-seleccion="jam" draggable="false"></div>
-        <div class="slide"><img id="usa" src="/assets/img/paises/USA.png" data-seleccion="usa" draggable="false"></div>
-        <div class="slide"><img id="uru" src="/assets/img/paises/URU.png" data-seleccion="uru" draggable="false"></div>
-        <div class="slide"><img id="pan" src="/assets/img/paises/PAN.png" data-seleccion="pan" draggable="false"></div>
-        <div class="slide"><img id="bol" src="/assets/img/paises/BOL.png" data-seleccion="bol" draggable="false"></div>
-        <div class="slide"><img id="bra" src="/assets/img/paises/BRA.png" data-seleccion="bra" draggable="false"></div>
-        <div class="slide"><img id="col" src="/assets/img/paises/COL.png" data-seleccion="col" draggable="false"></div>
-        <div class="slide"><img id="par" src="/assets/img/paises/PAR.png" data-seleccion="par" draggable="false"></div>
-        <div class="slide"><img id="crc" src="/assets/img/paises/CRC.png" data-seleccion="crc" draggable="false"></div>
+        <div class="slide"><img id="arg" src="/assets/img/paises/ARG.png" data-seleccion="arg" draggable="false">
+        </div>
+        <div class="slide"><img id="per" src="/assets/img/paises/PER.png" data-seleccion="per" draggable="false">
+        </div>
+        <div class="slide"><img id="chi" src="/assets/img/paises/CHI.png" data-seleccion="chi" draggable="false">
+        </div>
+        <div class="slide"><img id="can" src="/assets/img/paises/CAN.png" data-seleccion="can" draggable="false">
+        </div>
+        <div class="slide"><img id="mex" src="/assets/img/paises/MEX.png" data-seleccion="mex" draggable="false">
+        </div>
+        <div class="slide"><img id="ecu" src="/assets/img/paises/ECU.png" data-seleccion="ecu" draggable="false">
+        </div>
+        <div class="slide"><img id="ven" src="/assets/img/paises/VEN.png" data-seleccion="ven" draggable="false">
+        </div>
+        <div class="slide"><img id="jam" src="/assets/img/paises/JAM.png" data-seleccion="jam" draggable="false">
+        </div>
+        <div class="slide"><img id="usa" src="/assets/img/paises/USA.png" data-seleccion="usa" draggable="false">
+        </div>
+        <div class="slide"><img id="uru" src="/assets/img/paises/URU.png" data-seleccion="uru" draggable="false">
+        </div>
+        <div class="slide"><img id="pan" src="/assets/img/paises/PAN.png" data-seleccion="pan" draggable="false">
+        </div>
+        <div class="slide"><img id="bol" src="/assets/img/paises/BOL.png" data-seleccion="bol" draggable="false">
+        </div>
+        <div class="slide"><img id="bra" src="/assets/img/paises/BRA.png" data-seleccion="bra" draggable="false">
+        </div>
+        <div class="slide"><img id="col" src="/assets/img/paises/COL.png" data-seleccion="col" draggable="false">
+        </div>
+        <div class="slide"><img id="par" src="/assets/img/paises/PAR.png" data-seleccion="par" draggable="false">
+        </div>
+        <div class="slide"><img id="crc" src="/assets/img/paises/CRC.png" data-seleccion="crc" draggable="false">
+        </div>
 
       </div>
 
@@ -219,7 +233,7 @@
       function scrollAnimation() {
         if (!isScrolling) return;
         slider.scrollLeft += velocity;
-        velocity *= 0.95; // Frenado gradual
+        velocity *= 0.99; // Frenado gradual
         if (Math.abs(velocity) > 0.5) {
           requestAnimationFrame(scrollAnimation);
         } else {
@@ -385,7 +399,8 @@
             los partidos hasta los análisis posteriores, últimas noticias y los momentos más destacados.
           </p>
           <p>
-            Te enviaremos un mail cuando haya una noticia relacionada a la selección que elegiste, <peso>para que estés
+            Te enviaremos un mail cuando haya una noticia relacionada a la selección que elegiste, <peso>para que
+              estés
               siempre al tanto</peso>.
           </p>
         </div>
