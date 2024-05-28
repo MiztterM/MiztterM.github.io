@@ -161,12 +161,12 @@ html {
   @media screen and (max-width: 425px) {
     justify-content: center;
     text-align: center;
-    font-size: 100%;
+    font-size: 120%;
     padding: 7% 18%;
 
   }
 
-  @media screen and (max-width: 374px) {
+  @media screen and (max-width: 379px) {
     justify-content: center;
     text-align: center;
     font-size: 100%;
@@ -326,7 +326,7 @@ p peso {
     font-size: 190%;
     font-family: 'Noto Sans Display', sans-serif;
     font-weight: 900;
-    margin-top: 80px;
+    margin-top: 60px;
     margin-bottom: 0%;
     text-align: center;
   }
@@ -350,7 +350,7 @@ p peso {
     font-size: 170%;
     font-family: 'Noto Sans Display', sans-serif;
     font-weight: 900;
-    margin-top: 80px;
+    margin-top: 40px;
     margin-bottom: 0%;
     text-align: center;
   }
@@ -423,7 +423,7 @@ p peso {
 
 .texto {
   color: white;
-  font-size: 15%;
+  font-size: 100%;
   font-family: 'Noto Sans Display', sans-serif;
   font-weight: 400;
 }
@@ -443,7 +443,7 @@ p peso {
   }
 
   .texto {
-    font-size: 10%;
+    font-size: 80%;
   }
 }
 
@@ -458,11 +458,11 @@ p peso {
   }
 
   .num {
-    font-size: 100%;
+    font-size: 180%;
   }
 
   .texto {
-    font-size: 6%;
+    font-size: 70%;
   }
 }
 
@@ -625,6 +625,18 @@ p peso {
 
 }
 
+@media (max-width: 500px) {
+
+  .contenidosec3 {
+    grid-gap: 20px;
+  }
+
+  .revistas img {
+    margin-bottom: 2%;
+  }
+
+}
+
 /* CARDS */
 
 main.cards {
@@ -701,7 +713,7 @@ main.cards section.card span {
   }
 
   main.cards section.card:last-child {
-    margin-bottom: 0;
+    margin-bottom: 10px;
   }
 
   main.cards section.card button {
@@ -1191,7 +1203,7 @@ main.cards section.card span {
 
 .redes img {
   display: flexbox;
-  margin-right: 1%;
+  margin-right: 2%;
 }
 
 .logofooter a {
@@ -1270,7 +1282,7 @@ main.cards section.card span {
 
   .celulartexto {
     margin-bottom: 6%;
-    font-size: 10%;
+    font-size: 100%;
   }
 
   .footerredes {
@@ -1281,7 +1293,7 @@ main.cards section.card span {
   }
 
   .footerredes h3 {
-    font-size: 20%;
+    font-size: 100%;
   }
 
 }
@@ -1309,12 +1321,12 @@ main.cards section.card span {
   }
 
   .logofooter {
-    display: block;
+    display: none;
   }
 
   .celulartexto {
     margin-bottom: 6%;
-    font-size: 10%;
+    font-size: 80%;
   }
 
   .redes h3{
@@ -1354,7 +1366,7 @@ main.cards section.card span {
   color: #fff;
   font-family: 'Heebo', sans-serif;
   font-weight: 400;
-  font-size: 10%;
+  font-size: 100%;
 }
 
 @media (max-width: 1000px) {
@@ -1371,7 +1383,7 @@ main.cards section.card span {
     color: #fff;
     font-family: 'Heebo', sans-serif;
     font-weight: 400;
-    font-size: 2%;
+    font-size: 75%;
   }
 
 }
@@ -1390,7 +1402,7 @@ main.cards section.card span {
     color: #fff;
     font-family: 'Heebo', sans-serif;
     font-weight: 400;
-    font-size: 1%;
+    font-size: 70%;
   }
 
 }
@@ -1404,12 +1416,12 @@ main.cards section.card span {
   }
 
   .avisolegal p {
-    margin: 5.5% 2.5%;
+    margin: 3.5% 2.5%;
     text-align: center;
     color: #fff;
     font-family: 'Heebo', sans-serif;
     font-weight: 400;
-    font-size: 1%;
+    font-size: 50%;
   }
 
 }
