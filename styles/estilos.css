@@ -59,7 +59,7 @@ html {
 .contenido {
   position: relative;
   display: flex;
-  background-image: url("/assets/img/fondo.png");
+  background-image: url("../assets/img/fondo.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position-x: right;
@@ -77,7 +77,7 @@ html {
   .contenido {
     position: relative;
     display: flex;
-    background-image: url("/assets/img/fondo2.png");
+    background-image: url("../assets/img/fondo2.png");
     background-size: cover;
     background-repeat: no-repeat;
     background-position-x: right;
@@ -96,7 +96,7 @@ html {
   .contenido {
     position: relative;
     display: flex;
-    background-image: url("/assets/img/fondo3.png");
+    background-image: url("../assets/img/fondo3.png");
     background-size: cover;
     background-repeat: no-repeat;
     background-position-x: center;
@@ -109,7 +109,7 @@ html {
   .contenido {
     position: relative;
     display: flex;
-    background-image: url("/assets/img/fondo3.png");
+    background-image: url("../assets/img/fondo3.png");
     background-size: cover;
     background-repeat: no-repeat;
     background-position-x: center;
@@ -122,7 +122,7 @@ html {
   .contenido {
     position: relative;
     display: flex;
-    background-image: url("/assets/img/fondo3.png");
+    background-image: url("../assets/img/fondo3.png");
     background-size: cover;
     background-repeat: no-repeat;
     background-position-x: center;
@@ -161,7 +161,7 @@ html {
   @media screen and (max-width: 425px) {
     justify-content: center;
     text-align: center;
-    font-size: 120%;
+    font-size: 100%;
     padding: 7% 18%;
 
   }
@@ -173,6 +173,7 @@ html {
     padding: 7% 12%;
 
   }
+
 }
 
 /* Tipografía */
@@ -253,7 +254,6 @@ html {
   }
 }
 
-
 @media screen and (max-width: 500px) {
   .principal h2 {
   font-size: 18px;
@@ -318,6 +318,7 @@ p peso {
   width: 80%;
 }
 
+
 @media screen and (max-width: 540px) {
   .titulo h2 {
     margin-left: 10%;
@@ -331,7 +332,7 @@ p peso {
     text-align: center;
   }
 
-  .titulo img[src$="/assets/img/abajoseccion.png"] {
+  .titulo img[src$="./assets/img/abajoseccion.png"] {
     display: flex;
     width: 10%;
     margin-top: 1%;
@@ -381,7 +382,7 @@ p peso {
   margin-top: 1.4%;
   padding: 2% 10%;
   height: auto;
-  background-image: url("/assets/img/Timer2.png");
+  background-image: url("../assets/img/Timer2.png");
   background-size: cover;
   display: flex;
   justify-content: space-between;
@@ -514,7 +515,7 @@ p peso {
 }
 
 .fondosel {
-  background-image: url("/assets/img/paises/fondosel.png");
+  background-image: url("../assets/img/paises/fondosel.png");
   background-size: cover;
   height: max-content;
   background-position: center;
@@ -596,6 +597,7 @@ p peso {
 .textesec3 {
   text-align: left;
 }
+
 
 @media (max-width: 1000px) {
 
@@ -725,7 +727,7 @@ main.cards section.card span {
 /* FORMULARIO */
 
 .formulario {
-  background-image: url(/assets/img/fondoforms.png);
+  background-image: url(../assets/img/fondoforms.png);
   background-size: cover;
   background-position: right;
   padding-bottom: 5%;
@@ -849,7 +851,7 @@ main.cards section.card span {
 
 @media screen and (max-width: 583px) {
   .formulario {
-    background-image: url(/assets/img/fondoforms2.png);
+    background-image: url(../assets/img/fondoforms2.png);
     background-size: cover;
     background-position: center;
     padding-bottom: 2%;
@@ -884,7 +886,7 @@ main.cards section.card span {
 @media screen and (max-width: 425px) {
 
   .formulario {
-    background-image: url(/assets/img/fondoforms2.png);
+    background-image: url(../assets/img/fondoforms2.png);
     background-size: cover;
     background-position: right;
     padding-bottom: 0%;
@@ -1063,7 +1065,7 @@ main.cards section.card span {
 @media (max-width: 630px) {
 
   .popup h2 {
-    margin-top: 2%;
+    margin-top: 1%;
     margin-bottom: 10%;
     font-size: 200%;
   }
@@ -1074,14 +1076,14 @@ main.cards section.card span {
     font-family: 'Heebo', sans-serif;
     font-weight: 400;
     color: #fff;
-    font-size: 70%;
+    font-size: 100%;
     margin-bottom: 6%;
   }
 
   .popup a {
     margin-top: 4%;
-    width: 60%;
-    height: 10%;
+    width: 70%;
+    height: 20%;
     border: none;
     border-radius: 2%;
     font-family: 'Noto Sans Display', sans-serif;
@@ -1103,10 +1105,19 @@ main.cards section.card span {
 
 @media (max-width: 430px) {
 
+  .popup {
+  width: 60%;
+  background-color: #1D1D1D;
+  padding: 40px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
+  /* Sombra para resaltar */
+  text-align: center;
+}
+
   .popup h2 {
     margin-top: 2%;
     margin-bottom: 10%;
-    font-size: 150%;
+    font-size: 180%;
   }
 
   .popup p {
@@ -1115,14 +1126,14 @@ main.cards section.card span {
     font-family: 'Heebo', sans-serif;
     font-weight: 400;
     color: #fff;
-    font-size: 60%;
+    font-size: 80%;
     margin-bottom: 6%;
   }
 
   .popup a {
     margin-top: 4%;
-    width: 60%;
-    height: 10%;
+    width: 70%;
+    height: 20%;
     border: none;
     border-radius: 2%;
     font-family: 'Noto Sans Display', sans-serif;
@@ -1132,7 +1143,7 @@ main.cards section.card span {
     color: white;
     text-decoration: none;
     border-radius: 160px;
-    font-size: 70%;
+    font-size: 100%;
     text-decoration: none;
     transition: background-color 0.6s;
     text-align: center;
@@ -1144,42 +1155,7 @@ main.cards section.card span {
 
 @media (max-width: 360px) {
 
-  .popup h2 {
-    margin-top: 2%;
-    margin-bottom: 10%;
-    font-size: 130%;
-  }
 
-  .popup p {
-    align-items: left;
-    margin: 1% -10px;
-    font-family: 'Heebo', sans-serif;
-    font-weight: 400;
-    color: #fff;
-    font-size: 60%;
-    margin-bottom: 6%;
-  }
-
-  .popup a {
-    margin-top: 4%;
-    width: 60%;
-    height: 10%;
-    border: none;
-    border-radius: 2%;
-    font-family: 'Noto Sans Display', sans-serif;
-    font-weight: 700;
-    display: inline-block;
-    background-color: #CF3141;
-    color: white;
-    text-decoration: none;
-    border-radius: 160px;
-    font-size: 50%;
-    text-decoration: none;
-    transition: background-color 0.6s;
-    text-align: center;
-    line-height: 300%;
-    cursor: pointer;
-  }
 
 }
 
