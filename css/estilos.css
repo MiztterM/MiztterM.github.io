@@ -527,6 +527,23 @@ body {
 
 }
 
+@media (min-width: 789px) and (max-width: 1024px) {
+
+    .diseño h1 {
+        font-size: 3rem;
+    }
+
+    .card {
+        height: 480px;
+        width: auto;
+    }
+
+    .card p {
+        font-size: 1.8rem;
+    }
+
+}
+
 @media (max-width: 768px) {
 
     .diseño h1 {
@@ -720,6 +737,12 @@ body {
 
 @media (max-width: 768px) {
 
+    .final {
+        display: flex;
+        justify-content: left;
+        flex-wrap: wrap;
+    }
+
     .info p,
     .consigna p {
         margin: 0;
@@ -730,6 +753,13 @@ body {
     .info img {
         width: 30px;
         height: auto;
+    }
+
+    .consigna {
+        margin-right: 80px;
+        max-width: 400px;
+        text-align: left;
+        margin-top: 50px;
     }
 
 }
