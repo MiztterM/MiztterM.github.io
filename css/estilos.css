@@ -1,0 +1,762 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-position: center;
+    background-color: #D9D9D9;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* PORTADA */
+
+.presentacion {
+    background-color: #333333;
+    color: #F6F4F4;
+    text-align: center;
+    padding: 100px 20px;
+}
+
+.presentacion p {
+    margin: 0;
+    font-style: italic;
+    padding-bottom: -20px;
+    font-size: 2rem;
+}
+
+.presentacion h1 {
+    font-size: 4rem;
+    text-transform: uppercase;
+    margin: 30px 0 120px 0;
+}
+
+.presentacion h1 span {
+    background: linear-gradient(to top, #C93A48 40%, transparent 40%);
+    padding: 0 1%;
+}
+
+.flecha-abajo {
+    margin: 10px 0 -60px 0;
+    padding-top: 40px;
+    width: 40px;
+}
+
+
+@media (max-width: 1024px) {
+
+    .presentacion {
+        padding: 200px 20px;
+    }
+
+    .presentacion p {
+        font-size: 1.2rem;
+    }
+
+}
+
+@media (max-width: 425px) {
+
+    .presentacion {
+        padding: 200px 20px;
+    }
+
+    .presentacion h1 {
+        font-size: 2.5rem;
+        text-transform: uppercase;
+        margin: 10px 0 60px 0;
+    }
+
+    .presentacion p {
+        font-size: 1rem;
+    }
+
+}
+
+/* INFANCIA */
+
+.infancia {
+    padding: 0 5% 0 5%;
+    background: linear-gradient(to bottom, #D9D9D9 50%, #333333 50%);
+    margin-bottom: 0;
+}
+
+.infancia h1 {
+    color: #333333;
+    font-size: 4rem;
+    margin-bottom: 0;
+}
+
+.infancia p {
+    color: #474747;
+    font-weight: 500;
+    margin-bottom: 100px;
+}
+
+.imagenes-infancia {
+    display: inline;
+}
+
+.infanciaimg {
+    width: 450px;
+    margin-bottom: 5%;
+}
+
+.infancia p strong {
+    font-weight: 800;
+}
+
+@media (min-width: 1025px) and (max-width: 1440px) {
+
+    .infancia h1 {
+        font-size: 3.5rem;
+    }
+
+    .infancia p {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 1024px) {
+
+    .infancia {
+        background: linear-gradient(to bottom, #D9D9D9 80%, #333333 20%);
+    }
+
+    .infancia h1 {
+        font-size: 3.5rem;
+        text-align: center;
+    }
+
+    .infanciaimg {
+        width: 420px;
+        margin-bottom: 5%;
+    }
+
+    .infancia p {
+        font-size: 1.2rem;
+    }
+
+    .imagenes-infancia {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .infancia {
+        background: linear-gradient(to bottom, #D9D9D9 60%, #333333 40%);
+    }
+
+    .infanciaimg {
+        width: 650px;
+        margin-bottom: 5%;
+    }
+
+    .imagenes-infancia {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+}
+
+@media (max-width: 425px) {
+
+    .infancia h1 {
+        font-size: 2.5rem;
+    }
+
+    .infancia p {
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-bottom: 25px;
+        margin-left: 5%;
+    }
+
+    .infanciaimg {
+        width: 320px;
+        margin-bottom: 5%;
+    }
+
+    .imagenes-infancia {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 0px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+}
+
+
+
+/* ADOLESCENCIA */
+
+.adolescencia {
+    padding: 0 5% 0 0;
+    background: linear-gradient(to bottom, #C93A48 92%, #333333 8%);
+    display: flex;
+}
+
+.adolescencia-texto {
+    display: flex;
+    flex-direction: column;
+    padding: 0 5% 0 0;
+}
+
+.adolescencia h1 {
+    color: #FFFFFF;
+    font-size: 3.5rem;
+    margin-bottom: 0;
+    margin-left: 8%;
+}
+
+.adolescencia p {
+    color: #FFFFFF;
+    font-weight: 500;
+    margin-left: 8%;
+}
+
+.imagenes-adolescencia {
+    display: flex;
+    flex-direction: column;
+    margin-top: 4%;
+}
+
+.adolescenciaimg {
+    width: 400px;
+    height: auto;
+    margin-bottom: 6%;
+}
+
+.adolescencia p strong {
+    font-weight: 800;
+}
+
+@media (min-width: 1025px) and (max-width: 1440px) {
+
+    .adolescencia {
+        padding: 0 5% 10% 0;
+        background: linear-gradient(to bottom, #C93A48 90%, #333333 10%);
+        display: flex;
+    }
+
+    .adolescencia h1 {
+        font-size: 3.5rem;
+    }
+
+    .adolescencia p {
+        font-size: 1rem;
+    }
+
+}
+
+@media (max-width: 1024px) {
+
+    .adolescencia {
+        flex-direction: column;
+        padding: 10px 5%;
+        background: linear-gradient(to bottom, #C93A48 92%, #333333 8%);
+    }
+
+    .adolescencia-texto {
+        padding: 0;
+    }
+
+    .adolescencia h1 {
+        margin-left: 0;
+        text-align: center;
+    }
+
+    .adolescencia p {
+        font-size: 1.2rem;
+        margin-left: 0;
+        margin-bottom: 40px;
+    }
+
+    .imagenes-adolescencia {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        margin: 8% 0 auto;
+    }
+
+    .adolescenciaimg {
+        width: 100%;
+        min-width: 280px;
+    }
+}
+
+@media (max-width: 425px) {
+
+    .adolescencia h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0;
+    }
+
+    .adolescencia p {
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-bottom: 25px;
+    }
+
+    .adolescenciaimg {
+        width: 350px;
+        margin-bottom: 5%;
+    }
+
+    .adolescencia-infancia {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+}
+
+/* PRESENTE */
+
+.presente {
+    padding: 0 5% 0 0;
+    background-color: #333333;
+    display: flex;
+}
+
+.presente-texto {
+    display: flex;
+    flex-direction: column;
+    padding: 0 5% 0 0;
+}
+
+.presente h1 {
+    color: #FFFFFF;
+    font-size: 3.5rem;
+    margin-bottom: 0;
+    margin-left: 8%;
+}
+
+.presente p {
+    color: #FFFFFF;
+    font-weight: 500;
+    margin-left: 8%;
+}
+
+.imagenes-presente {
+    display: inline;
+    margin-left: 5%;
+}
+
+.presenteimg {
+    width: 600px;
+    margin-bottom: 5%;
+}
+
+.presente p strong {
+    font-weight: 800;
+}
+
+@media (min-width: 1025px) and (max-width: 1440px) {
+
+    .presente {
+        padding: 0 5% 0 0;
+    }
+
+    .presente h1 {
+        font-size: 3.5rem;
+    }
+
+    .presente p {
+        font-size: 1rem;
+    }
+
+    .presenteimg {
+        width: 600px;
+        margin-bottom: 5%;
+    }
+}
+
+@media (max-width: 1024px) {
+
+    .presente {
+        flex-direction: column;
+        padding: 0;
+    }
+
+    .presente-texto {
+        order: 1;
+        padding: 0 5% 0 0;
+    }
+
+    .presente h1 {
+        text-align: center;
+    }
+
+    .presente p {
+        font-size: 1.2rem;
+    }
+
+    .imagenes-presente {
+        order: 2;
+        /* abajo */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .presenteimg {
+        width: 85%;
+        max-width: 850px;
+        padding: 80px 0;
+    }
+}
+
+@media (max-width: 425px) {
+
+    .presente h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0;
+    }
+
+    .presente p {
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+
+    .presenteimg {
+        width: 350px;
+        margin-bottom: 2%;
+    }
+
+    .presente-infancia {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+}
+
+
+/* DISEÑO - ¿QUE ME GUSTA HACER? */
+
+.diseño {
+    background-color: #D9D9D9;
+    color: #C93A48;
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.diseño h1 {
+    font-size: 4rem;
+    margin-bottom: 2%;
+}
+
+.cards-diseño {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.card {
+    position: relative;
+    width: 280px;
+    height: auto;
+    overflow: hidden;
+    border-radius: 15px;
+    border: 2px solid #C93A48;
+}
+
+.card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card p {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    margin: 0;
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    z-index: 10;
+    padding: 0 10px;
+}
+
+@media (min-width: 1025px) and (max-width: 1440px) {
+
+    .diseño h1 {
+        font-size: 3.5rem;
+    }
+
+    .card {
+        height: 320px;
+        width: auto;
+    }
+
+    .card p {
+        font-size: 1.2rem;
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .diseño h1 {
+        font-size: 3rem;
+    }
+
+    .card {
+        height: 360px;
+        width: auto;
+    }
+
+    .card p {
+        font-size: 1rem;
+    }
+
+}
+
+@media (max-width: 425px) {
+
+    .diseño h1 {
+        font-size: 1.2rem;
+    }
+
+    .card {
+        height: 360px;
+        width: auto;
+    }
+
+}
+
+
+
+
+/* SOFTWARE - ¿QUE SOFTWARES USO? */
+
+.softwares {
+    background-color: #D9D9D9;
+    color: #C93A48;
+    text-align: center;
+}
+
+.softwares h1 {
+    font-size: 4rem;
+    margin-bottom: 2%;
+}
+
+.cards-softwares {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.card-softwares {
+    position: relative;
+    width: 280px;
+    height: auto;
+    overflow: hidden;
+}
+
+.card-softwares img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-softwares p {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    margin: 0;
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    z-index: 10;
+    padding: 0 10px;
+}
+
+@media (max-width: 1024px) {
+
+    .softwares h1 {
+        font-size: 3.5rem;
+        margin: 10px;
+    }
+
+    .card-softwares {
+        height: 250px;
+        width: auto;
+    }
+
+    .card-softwares p {
+        font-size: 1.2rem;
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .softwares h1 {
+        font-size: 3rem;
+    }
+
+    .card-softwares {
+        height: 180px;
+        width: auto;
+    }
+
+    .card-softwares p {
+        font-size: 1rem;
+    }
+
+}
+
+@media (max-width: 425px) {
+
+    .softwares h1 {
+        font-size: 1.2rem;
+    }
+
+    .card-softwares {
+        height: 100px;
+        width: auto;
+    }
+
+    .card-softwares p {
+        font-size: 0.5rem;
+        bottom: 10px;
+    }
+
+}
+
+
+/* FINAL */
+
+.final {
+    background-color: #333333;
+    color: white;
+    padding: 60px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5%;
+}
+
+.contacto {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.info img {
+    width: 40px;
+    height: auto;
+}
+
+.info p,
+.consigna p {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.consigna {
+    max-width: 300px;
+    text-align: right;
+}
+
+@media (min-width: 1025px) and (max-width: 1440px) {
+
+    .consigna {
+        max-width: 550px;
+    }
+
+}
+
+@media (max-width: 1024px) {
+
+    .info p,
+    .consigna p {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .info p,
+    .consigna p {
+        margin: 0;
+        font-size: 0.8rem;
+    }
+
+
+    .info img {
+        width: 30px;
+        height: auto;
+    }
+
+}
+
+@media (max-width: 425px) {
+
+    .final {
+        display: flex;
+        justify-content: left;
+        flex-wrap: wrap;
+    }
+
+    .info p,
+    .consigna p {
+        margin: 0;
+        font-size: 0.5rem;
+    }
+
+    .info img {
+        width: 20px;
+        height: auto;
+    }
+
+    .consigna {
+        margin-top: 20px;
+        max-width: 300px;
+        text-align: left;
+    }
+
+}
