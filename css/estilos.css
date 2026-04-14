@@ -172,6 +172,31 @@ body {
 
 }
 
+
+@media (min-width: 516px) and (max-width: 767px) {
+    .infanciaimg {
+        width: 450px;
+        margin-bottom: 5%;
+    }
+
+}
+
+@media (min-width: 426px) and (max-width: 515px) {
+    .infanciaimg {
+        width: 350px;
+        margin-bottom: 5%;
+    }
+
+    .infancia h1 {
+        font-size: 2.5rem;
+    }
+
+    .infancia p {
+        font-size: 1rem;
+    }
+
+}
+
 @media (max-width: 425px) {
 
     .infancia h1 {
@@ -202,7 +227,38 @@ body {
 
 }
 
+@media (max-width: 370px) {
 
+    .infancia {
+        padding: 0 4% 0 4%;
+    }
+
+    .infancia h1 {
+        font-size: 2rem;
+    }
+
+    .infancia p {
+        font-size: 0.5rem;
+    }
+
+    .infanciaimg {
+        width: 280px;
+    }
+
+}
+
+
+@media (max-width: 320px) {
+
+    .infancia {
+        padding: 0 4% 0 4%;
+    }
+
+    .infanciaimg {
+        width: 260px;
+    }
+
+}
 
 /* ADOLESCENCIA */
 
@@ -274,7 +330,7 @@ body {
     }
 
     .adolescencia-texto {
-        padding: 0;
+        padding: 4%;
     }
 
     .adolescencia h1 {
@@ -304,6 +360,18 @@ body {
     }
 }
 
+@media (min-width: 426px) and (max-width: 515px) {
+
+    .adolescencia h1 {
+        font-size: 2.5rem;
+    }
+
+    .adolescencia p {
+        font-size: 1rem;
+    }
+
+}
+
 @media (max-width: 425px) {
 
     .adolescencia h1 {
@@ -322,7 +390,7 @@ body {
         margin-bottom: 5%;
     }
 
-    .adolescencia-infancia {
+    .imagenes-adolescencia {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -333,6 +401,39 @@ body {
     }
 
 }
+
+@media (max-width: 370px) {
+
+    .adolescencia {
+        padding: 0 4% 0 4%;
+    }
+
+    .adolescencia h1 {
+        font-size: 2rem;
+    }
+
+    .adolescencia p {
+        font-size: 0.5rem;
+    }
+
+    .adolescenciaimg {
+        width: 290px;
+    }
+
+}
+
+@media (max-width: 320px) {
+
+    .adolescencia {
+        padding: 0 4% 0 4%;
+    }
+
+    .adolescenciaimg {
+        width: 200px;
+    }
+
+}
+
 
 /* PRESENTE */
 
@@ -430,6 +531,18 @@ body {
     }
 }
 
+@media (min-width: 426px) and (max-width: 515px) {
+
+    .presente h1 {
+        font-size: 2.5rem;
+    }
+
+    .presente p {
+        font-size: 1rem;
+    }
+
+}
+
 @media (max-width: 425px) {
 
     .presente h1 {
@@ -460,6 +573,56 @@ body {
 
 }
 
+@media (max-width: 395px) {
+    .presenteimg {
+        width: 300px;
+        margin-bottom: 2%;
+        margin-left: -20px;
+    }
+
+    .presente p {
+        font-size: 0.5rem;
+        margin-bottom: -40px;
+    }
+
+}
+
+@media (max-width: 370px) {
+
+    .presente {
+        padding: 0 1% 0 1%;
+    }
+
+    .presente h1 {
+        font-size: 2rem;
+    }
+
+    .presente p {
+        font-size: 0.5rem;
+        margin-bottom: -50px;
+    }
+
+    .presenteimg {
+        width: 290px;
+        margin-bottom: -20px;
+    }
+
+}
+
+@media (max-width: 320px) {
+
+    .presente {
+        padding: 0 1% 0 1%;
+    }
+
+    .presenteimg {
+        width: 240px;
+    }
+
+    .presente p {
+        margin-bottom: -50px;
+    }
+}
 
 /* DISEÑO - ¿QUE ME GUSTA HACER? */
 
@@ -564,7 +727,7 @@ body {
 @media (max-width: 425px) {
 
     .diseño h1 {
-        font-size: 1.2rem;
+        font-size: 2.2rem;
     }
 
     .card {
@@ -574,8 +737,13 @@ body {
 
 }
 
+@media (max-width: 343px) {
 
+    .diseño h1 {
+        font-size: 1.8rem;
+    }
 
+}
 
 /* SOFTWARE - ¿QUE SOFTWARES USO? */
 
@@ -623,6 +791,13 @@ body {
     padding: 0 10px;
 }
 
+@media (min-width: 1494px) and (max-width: 2500px) {
+    .softwares {
+        margin: 0 10%;
+    }
+}
+
+
 @media (max-width: 1024px) {
 
     .softwares h1 {
@@ -661,7 +836,7 @@ body {
 @media (max-width: 425px) {
 
     .softwares h1 {
-        font-size: 1.2rem;
+        font-size: 2.2rem;
     }
 
     .card-softwares {
@@ -674,6 +849,52 @@ body {
         bottom: 10px;
     }
 
+}
+
+@media (max-width: 395px) {
+
+    .card-softwares {
+        height: 80px;
+        width: auto;
+        gap: 1px;
+    }
+
+    .card-softwares p {
+        font-size: 0.5rem;
+        bottom: 10px;
+    }
+
+}
+
+
+@media (max-width: 343px) {
+
+    .softwares h1 {
+        font-size: 1.8rem;
+    }
+
+    .card-softwares {
+        height: 160px;
+        width: auto;
+    }
+
+    .card-softwares p {
+        font-size: 0.4rem;
+        bottom: 10px;
+    }
+}
+
+@media (max-width: 320px) {
+
+    .card-softwares {
+        height: 150px;
+        width: auto;
+    }
+
+    .card-softwares p {
+        font-size: 1rem;
+        bottom: 15px;
+    }
 }
 
 
