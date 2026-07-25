@@ -1089,6 +1089,9 @@ body {
 .lista-enlaces a { color: var(--color-texto); text-decoration: none; font-size: var(--tipo-chico); font-weight: 600; transition: color 0.2s ease; }
 .lista-enlaces a:hover { color: var(--color-secundario); }
 
+.lista-enlaces li { display: flex; align-items: center; min-height: 20px; 
+}
+
 .redes-iconos { display: flex; gap: var(--espacio-xs); }
 .icono-amarillo { color: var(--color-secundario); width: 20px; height: 20px; flex-shrink: 0; }
 .icono-grande { width: 32px; height: 32px; }
@@ -1159,7 +1162,7 @@ body {
   .contenedor-historia { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: var(--espacio-md); }
   .historia-imagenes { flex: 1; }
   .grilla-redes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--espacio-md); }
-  .contenedor-footer { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--espacio-md); }
+  .contenedor-footer { display: grid; grid-template-columns: auto auto auto auto; justify-content: space-between; gap: var(--espacio-md); }
   .lista-ubicaciones li { white-space: nowrap; }
 }
 
