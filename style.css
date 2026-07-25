@@ -1,0 +1,1966 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;800&display=swap');
+
+/* ==========================================================================
+   1. VARIABLES DE DISEÑO
+   ========================================================================== */
+:root {
+  /* Paleta de Colores */
+  --color-primario: #AB1018;
+  --color-secundario: #FFC107;
+  --color-terciario: #00569E;
+  --color-texto: #F8F9FA;
+  --color-fondo: #151515;
+  --color-borde: rgba(108, 117, 125, 0.5);
+  --color-fondo-secundario: #EFEFEF;
+
+  /* Tipografía */
+  --fuente-principal: 'Work Sans', sans-serif;
+  --tipo-display: 48px;
+  --tipo-grande: 32px;
+  --tipo-medio: 20px;
+  --tipo-nav: 12px;
+  --tipo-parrafo: 16px;
+  --tipo-base: 16px;
+  --tipo-chico: 14px;
+
+  /* Escala de Espaciado (Regla del 8) */
+  --espacio-xs: 0.5rem;
+  /* 8px */
+  --espacio-sm: 1rem;
+  /* 16px */
+  --espacio-md: 2rem;
+  /* 32px */
+  --espacio-lg: 4rem;
+  /* 64px */
+}
+
+/* ==========================================================================
+   2. RESET Y ESTRUCTURA BASE
+   ========================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--fuente-principal);
+  background-color: var(--color-texto);
+  color: var(--color-fondo);
+  line-height: 1.5;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+
+  /* ESTAS DOS LÍNEAS FRENAN EL DESASTRE */
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.encabezado-sitio,
+.contenido-principal {
+  /* Obliga a los hijos del Grid a respetar el límite de la pantalla */
+  min-width: 0;
+  width: 100%;
+}
+
+/* ==========================================================================
+   3. COMPONENTES GENERALES (Botones)
+   ========================================================================== */
+.btn-primario,
+.btn-secundario {
+  display: inline-block;
+  padding: var(--espacio-sm) var(--espacio-md);
+  /* 16px alto, 32px ancho */
+  font-size: var(--tipo-base);
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  line-height: 1;
+}
+
+.btn-primario:hover,
+.btn-secundario:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.btn-primario {
+  background-color: var(--color-primario);
+  color: var(--color-texto);
+}
+
+.btn-secundario {
+  background-color: var(--color-texto);
+  color: var(--color-primario);
+}
+
+/* ==========================================================================
+   4. ENCABEZADO Y NAVEGACIÓN
+   ========================================================================== */
+.encabezado-sitio {
+  background-color: var(--color-primario);
+  width: 100%;
+}
+
+.contenedor-navegacion {
+  color: var(--color-texto);
+  padding: var(--espacio-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  /* <--- AGREGÁ ESTA LÍNEA */
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.logotipo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
+.logotipo img {
+  max-width: 40px;
+  height: auto;
+}
+
+.logotipo-texto {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-titulo {
+  font-size: var(--tipo-medio);
+  font-weight: 600;
+  line-height: 1;
+  /* Remueve interlineado extra para juntar los textos */
+}
+
+.logo-subtitulo {
+  font-size: var(--tipo-nav);
+  line-height: 1;
+}
+
+/* Menú de enlaces */
+.menu-navegacion {
+  margin-left: auto;
+  /* Empuja el menú a la derecha */
+  margin-right: var(--espacio-lg);
+  /* Separación exacta de 64px con el botón donar */
+}
+
+.menu-navegacion ul {
+  display: flex;
+  align-items: center;
+  list-style: none;
+}
+
+.menu-navegacion li {
+  position: relative;
+  padding: 0 var(--espacio-sm);
+}
+
+/* Separadores verticales entre enlaces */
+.menu-navegacion li::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 60%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 15px;
+  background-color: var(--color-texto);
+}
+
+.menu-navegacion li:last-child::after {
+  display: none;
+  /* Oculta la línea en el último elemento */
+}
+
+.menu-navegacion li:last-child {
+  padding-right: 0;
+}
+
+.menu-navegacion li:first-child {
+  padding-left: 0;
+}
+
+.item-navegacion {
+  color: var(--color-texto);
+  font-size: var(--tipo-chico);
+  text-decoration: none;
+}
+
+.item-navegacion:hover {
+  color: var(--color-secundario);
+}
+
+/* Botón donar específico del Nav */
+.btn-donar-nav {
+  background-color: var(--color-texto);
+  color: var(--color-primario);
+  padding: 8px 16px;
+  text-decoration: none;
+  font-size: var(--tipo-base);
+  font-weight: 600;
+  border-radius: 8px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-donar-nav:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.icono-mano {
+  width: 16px;
+  height: auto;
+  display: block;
+}
+
+/* Ocultamos la opción del menú hamburguesa por defecto */
+.item-donar-movil {
+  display: none;
+}
+
+/* ==========================================================================
+   5. HERO PRESENTACIÓN
+   ========================================================================== */
+.hero-presentacion {
+  background-image: url('img/bomberos.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: var(--color-texto);
+
+  /* FIX: Usamos min-height para que la foto se adapte al ancho y no se vea con zoom exagerado */
+  min-height: 480px;
+  padding: var(--espacio-lg) 0;
+
+  /* Agregamos flex acá para que el contenido respire bien centrado verticalmente */
+  display: flex;
+  align-items: center;
+
+  position: relative;
+  z-index: 1;
+}
+
+.hero-contenido {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  /* Padding base para celulares */
+  padding: 0 var(--espacio-sm);
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.hero-contenido h1 {
+  font-size: var(--tipo-display);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: var(--espacio-sm);
+  text-align: left;
+}
+
+.texto-destacado {
+  color: var(--color-secundario);
+  font-style: italic;
+}
+
+.hero-bajada {
+  font-size: var(--tipo-base);
+  font-weight: 500;
+  margin-bottom: var(--espacio-md);
+  max-width: 600px;
+  text-align: left;
+}
+
+.hero-acciones {
+  display: flex;
+  flex-direction: row;
+  /* Forzamos a que estén uno al lado del otro */
+  flex-wrap: wrap;
+  /* Si la pantalla es minúscula, bajan suavemente */
+  gap: var(--espacio-sm);
+}
+
+/* ==========================================================================
+   6. CINTA DE EMERGENCIAS (Marquee Animado)
+   ========================================================================== */
+.cinta-emergencias {
+  background-color: var(--color-primario);
+  color: var(--color-texto);
+  width: 100%;
+  overflow: hidden;
+  padding: var(--espacio-sm) 0;
+  /* Solo padding vertical */
+}
+
+.cinta-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: desplazamiento 15s linear infinite;
+}
+
+.cinta-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes desplazamiento {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.emergencia-grupo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--espacio-md);
+  gap: var(--espacio-xs);
+  font-size: var(--tipo-medio);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.emergencia-label {
+  color: var(--color-texto);
+}
+
+.emergencia-numero {
+  color: var(--color-secundario);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icono-telefono {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* ==========================================================================
+   MENÚ HAMBURGUESA (Checkbox Hack)
+   ========================================================================== */
+.menu-toggle-checkbox {
+  display: none;
+  /* Ocultamos el input feo */
+}
+
+.nav-derecha {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  /* Cuando el menú desaparece en móvil, esto asegura que el grupo se quede a la derecha */
+  margin-left: auto;
+}
+
+.menu-hamburguesa {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: var(--color-texto);
+}
+
+/* ==========================================================================
+   SECCIÓN: NUESTRA HISTORIA
+   ========================================================================== */
+.seccion-historia {
+  /* Respetamos el mismo padding vertical que el Hero */
+  padding: var(--espacio-lg) 0;
+  background-color: var(--color-texto);
+  /* Fondo claro de la página */
+}
+
+.contenedor-historia {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--espacio-sm);
+  /* Padding base celular */
+
+  display: flex;
+  flex-direction: column;
+  /* Apilado en celulares: primero texto, abajo imágenes */
+  gap: var(--espacio-lg);
+}
+
+.historia-pre-titulo {
+  display: block;
+  color: var(--color-primario);
+  font-size: var(--tipo-base);
+  font-weight: 600;
+  margin-bottom: var(--espacio-xs);
+}
+
+.historia-titulo {
+  color: var(--color-fondo);
+  /* Texto oscuro */
+  font-size: var(--tipo-grande);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: var(--espacio-md);
+}
+
+.historia-texto p {
+  color: var(--color-fondo);
+  font-size: var(--tipo-parrafo);
+  margin-bottom: var(--espacio-sm);
+}
+
+.historia-imagenes {
+  display: flex;
+  gap: var(--espacio-md);
+  /* Separación entre las dos imágenes */
+}
+
+.imagen-historia {
+  width: calc(50% - (var(--espacio-md) / 2));
+
+  /* ELIMINAMOS height: auto; Y AGREGAMOS ESTO: */
+  aspect-ratio: 3 / 4;
+  /* Proporción vertical clásica */
+
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 8px 16px 0 var(--color-secundario);
+}
+
+.imagen-historia:nth-child(1) {
+  transform: translateY(24px);
+}
+
+/* Mueve la segunda imagen hacia arriba */
+.imagen-historia:nth-child(2) {
+  transform: translateY(-24px);
+}
+
+/* ==========================================================================
+   SECCIÓN: DATOS ESTADÍSTICOS
+   ========================================================================== */
+.seccion-datos {
+  /* Fondo gris claro que tenés en root */
+  background-color: var(--color-fondo-secundario);
+  padding: var(--espacio-lg) 0;
+}
+
+.contenedor-datos {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--espacio-sm);
+
+  display: flex;
+  /* Base para celular: los 4 grupos apilados hacia abajo */
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-lg);
+}
+
+.dato-grupo {
+  display: flex;
+  /* Apila el número arriba y el texto abajo */
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--espacio-xs);
+  /* Separación leve entre número y texto */
+}
+
+.dato-numero {
+  color: var(--color-primario);
+  font-size: var(--tipo-display);
+  font-weight: 800;
+  /* Bien grueso como en la imagen */
+  line-height: 1;
+}
+
+.dato-texto {
+  /* Usamos el color de fondo (oscuro) para el texto, tal como pediste */
+  color: var(--color-fondo);
+  font-size: var(--tipo-medio);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* ==========================================================================
+   SECCIÓN: NUESTROS CUARTELES
+   ========================================================================== */
+.seccion-cuarteles {
+  padding: var(--espacio-lg) 0;
+  background-color: var(--color-texto);
+}
+
+.contenedor-cuarteles {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--espacio-sm);
+  /* Padding base para celulares */
+}
+
+.cuarteles-pre-titulo {
+  display: block;
+  color: var(--color-primario);
+  font-size: var(--tipo-base);
+  font-weight: 600;
+  margin-bottom: var(--espacio-xs);
+}
+
+.cuarteles-titulo {
+  color: var(--color-fondo);
+  font-size: var(--tipo-grande);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: var(--espacio-md);
+}
+
+/* Grilla apilada para celulares */
+.grilla-cuarteles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+/* Base de cada tarjeta */
+.tarjeta-cuartel {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 250px;
+  display: flex;
+  align-items: flex-end;
+
+  /* NUEVO: Limpiamos estilos de enlace */
+  text-decoration: none;
+
+  /* NUEVO: Preparamos la animación */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* EL EFECTO HOVER */
+.tarjeta-cuartel:hover {
+  /* La movemos 4 píxeles arriba y a la izquierda para que el efecto "pop" sea más realista */
+  transform: translate(-4px, -4px);
+  /* Dibujamos la sombra sólida del mismo color y tamaño que en Historia */
+  box-shadow: 12px 12px 0 var(--color-secundario);
+}
+
+.imagen-cuartel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* El degradado oscuro para que la ubicación se pueda leer encima de cualquier foto */
+.tarjeta-cuartel::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 70%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
+  z-index: 1;
+}
+
+/* Textos sobre la foto */
+.info-cuartel {
+  position: relative;
+  z-index: 2;
+  /* Por encima de la foto y el degradado */
+  padding: var(--espacio-sm);
+  width: 100%;
+}
+
+.info-cuartel h3 {
+  color: var(--color-texto);
+  font-size: var(--tipo-medio);
+  /* Por defecto para los chicos */
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.tarjeta-cuartel .info-cuartel h3 {
+  font-size: var(--tipo-grande);
+}
+
+.info-cuartel p {
+  color: var(--color-secundario);
+  font-size: var(--tipo-medio);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0px;
+}
+
+.info-cuartel p svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ==========================================================================
+   SECCIÓN: SUMATE (FORMULARIO)
+   ========================================================================== */
+.seccion-sumate {
+  background-image: url('img/fondo-voluntario.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: var(--color-texto);
+  padding: var(--espacio-lg) 0;
+  position: relative;
+}
+
+/* Efecto opcional de capa oscura para que el texto resalte sobre la foto */
+.seccion-sumate::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1;
+}
+
+.contenedor-sumate {
+  position: relative;
+  z-index: 2;
+  /* Por encima de la capa oscura */
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--espacio-sm);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+}
+
+.sumate-izquierda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+}
+
+.sumate-pre-titulo {
+  display: block;
+  color: var(--color-secundario);
+  font-size: var(--tipo-base);
+  font-weight: 600;
+  margin-bottom: var(--espacio-xs);
+}
+
+.sumate-titulo {
+  font-size: var(--tipo-grande);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: var(--espacio-md);
+  color: var(--color-texto);
+}
+
+.sumate-bajada {
+  font-size: var(--tipo-parrafo);
+  color: var(--color-texto);
+  line-height: 1.5;
+  max-width: 500px;
+}
+
+/* Nota de cadetes */
+.nota-cadetes {
+  font-size: var(--tipo-chico);
+  color: var(--color-texto);
+  max-width: 450px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+/* Tarjeta Blanca del Formulario */
+.sumate-derecha {
+  background-color: #F8F9FA;
+  color: var(--color-fondo);
+  padding: var(--espacio-md);
+  border-radius: 16px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+  width: 100%;
+
+  /* CLAVE: Mantiene siempre la misma altura fija para evitar saltos o parpadeos */
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* Centra el contenido verticalmente tanto en formulario como en éxito */
+}
+
+.formulario-sumate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  width: 100%;
+}
+
+.campo-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo-grupo label {
+  font-size: var(--tipo-chico);
+  font-weight: 700;
+  color: var(--color-fondo);
+}
+
+.campo-grupo input,
+.campo-grupo textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  font-family: var(--fuente-principal);
+  font-size: var(--tipo-parrafo);
+  background-color: #FFFFFF;
+  color: var(--color-fondo);
+  outline: none;
+  transition: border-color 0.2s ease;
+  resize: none;
+}
+
+.campo-grupo input:focus,
+.campo-grupo textarea:focus {
+  border-color: var(--color-primario);
+}
+
+.fila-doble {
+  display: flex;
+  gap: var(--espacio-sm);
+}
+
+.fila-doble .campo-grupo {
+  flex: 1;
+}
+
+.fila-doble .campo-edad {
+  max-width: 100px;
+  /* Ancho acotado para el input de edad */
+}
+
+/* Botón principal ocupando todo el ancho */
+.btn-formulario {
+  width: 100%;
+  margin-top: var(--espacio-xs);
+  padding: 14px;
+  border-radius: 8px;
+  font-size: var(--tipo-parrafo);
+}
+
+/* Mensaje de error de edad */
+.mensaje-error {
+  color: var(--color-primario);
+  font-size: var(--tipo-chico);
+  font-weight: 700;
+  display: none;
+  /* Oculto por defecto */
+  margin-top: -4px;
+}
+
+/* Caja de éxito que reemplaza al formulario */
+.mensaje-exito {
+  display: none;
+  /* Oculto por defecto */
+  text-align: center;
+  width: 100%;
+  animation: aparecer 0.5s ease forwards;
+}
+
+.mensaje-exito h3 {
+  color: var(--color-fondo);
+  font-size: var(--tipo-grande);
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.mensaje-exito p {
+  color: var(--color-fondo);
+  font-size: var(--tipo-parrafo);
+  font-weight: 500;
+}
+
+/* Animación suave para cuando aparece el mensaje de éxito */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   SECCIÓN: CONTACTO
+   ========================================================================== */
+.seccion-contacto {
+  padding: var(--espacio-lg) 0;
+  background-color: var(--color-texto);
+  /* Fondo claro, siguiendo el diseño */
+}
+
+.contenedor-contacto {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--espacio-sm);
+  /* Padding base para celulares */
+}
+
+.contacto-pre-titulo {
+  display: block;
+  color: var(--color-primario);
+  font-size: var(--tipo-base);
+  font-weight: 600;
+  margin-bottom: var(--espacio-xs);
+}
+
+.contacto-titulo {
+  color: var(--color-fondo);
+  font-size: var(--tipo-grande);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: var(--espacio-md);
+}
+
+/* Grilla apilada para celulares */
+.grilla-redes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+/* Base de cada tarjeta interactiva */
+.tarjeta-red {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 300px;
+  /* Altura para que las imágenes se aprecien bien */
+  display: flex;
+  align-items: flex-end;
+  /* Texto hacia abajo */
+  text-decoration: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Efecto hover con sombra amarilla */
+.tarjeta-red:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 12px 12px 0 var(--color-secundario);
+}
+
+.imagen-red {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* Degradado oscuro para resaltar el texto blanco */
+.tarjeta-red::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
+  z-index: 1;
+}
+
+/* Texto sobre la foto */
+.info-red {
+  position: relative;
+  z-index: 2;
+  padding: var(--espacio-md);
+  width: 100%;
+}
+
+.info-red h3 {
+  color: var(--color-texto);
+  font-size: var(--tipo-grande);
+  /* Tipografía grande como en la referencia */
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* ==========================================================================
+   NUEVO BOTÓN OUTLINE (Sección General)
+   ========================================================================== */
+.btn-outline {
+  display: inline-block;
+  padding: var(--espacio-sm) var(--espacio-md);
+  font-size: var(--tipo-base);
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  line-height: 1;
+  background-color: transparent;
+  color: var(--color-primario);
+  border: 1px solid var(--color-primario);
+}
+
+.btn-outline:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* Modificador para que los botones ocupen todo el ancho de la tarjeta */
+.btn-ancho {
+  width: 100%;
+}
+
+/* ==========================================================================
+   SECCIÓN: DONAR
+   ========================================================================== */
+.seccion-donar {
+  padding: var(--espacio-xs) 0;
+  padding-bottom: var(--espacio-md);
+  background-color: var(--color-texto);
+  text-align: center;
+}
+
+.contenedor-donar {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--espacio-sm);
+  /* Padding celular */
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+}
+
+.cabecera-donar {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.donar-titulo {
+  color: var(--color-fondo);
+  font-size: var(--tipo-grande);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: var(--espacio-md);
+}
+
+.donar-bajada {
+  color: var(--color-fondo);
+  font-size: var(--tipo-parrafo);
+  font-weight: 500;
+}
+
+/* Grilla base: apilada en celulares */
+.grilla-donaciones {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.tarjeta-donacion {
+  background-color: var(--color-fondo-secundario);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: var(--espacio-md) var(--espacio-md);
+  width: 100%;
+  max-width: 380px;
+  /* Ancho máximo para que no se deformen */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Cartel flotante "MÁS ELEGIDO" */
+.badge-destacado {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Centrado exacto sobre el borde */
+  background-color: var(--color-primario);
+  color: var(--color-texto);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 16px;
+  border-radius: 8px;
+  text-transform: uppercase;
+}
+
+.donacion-nivel {
+  font-size: var(--tipo-medio);
+  font-weight: 800;
+  color: var(--color-fondo);
+  margin-bottom: 4px;
+}
+
+.donacion-precio {
+  font-size: var(--tipo-display);
+  font-weight: 800;
+  color: var(--color-primario);
+  line-height: 1;
+  margin-bottom: var(--espacio-md);
+}
+
+.donacion-botones {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* Separación entre el botón rojo y el blanco */
+}
+
+/* ==========================================================================
+   MÓDULO DE PAGO DINÁMICO
+   ========================================================================== */
+.oculto {
+  display: none !important;
+}
+
+/* 1. Tarjeta seleccionada */
+.tarjeta-donacion.seleccionada {
+  border: 2px solid var(--color-primario);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(171, 16, 24, 0.15);
+  transition: all 0.3s ease;
+
+  /* LA CLAVE: Esto asegura que la tarjeta (con su borde y sombra) quede por encima del triángulo */
+  z-index: 10;
+}
+
+/* 2. El Módulo de pago actualizado */
+.modulo-pago {
+  width: 100%;
+  text-align: left;
+  background-color: var(--color-fondo-secundario);
+  padding: var(--espacio-md) var(--espacio-md) var(--espacio-xs) var(--espacio-md);
+  border-radius: 12px;
+  position: relative;
+  --posicion-flecha: 50%;
+
+  /* Le sumamos un pequeño margen arriba para separarlo de las tarjetas */
+  margin-top: 16px;
+}
+
+/* 3. El Triángulo (Flecha) */
+.modulo-pago::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  /* Reducimos la altura (antes era -30px) */
+  left: var(--posicion-flecha);
+  transform: translateX(-50%);
+
+  /* Achicamos la base y la altura del triángulo para que sea más sutil y proporcionado */
+  border-left: 30px solid transparent;
+  border-right: 30px solid transparent;
+  border-bottom: 20px solid var(--color-fondo-secundario);
+
+  transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* 4. Select estilo menú hamburguesa */
+.select-estilo-menu {
+  background-color: var(--color-primario) !important;
+  color: var(--color-texto) !important;
+  border: none !important;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.select-estilo-menu option {
+  background-color: var(--color-primario);
+  color: var(--color-texto);
+}
+
+.resumen-eleccion {
+  margin-bottom: var(--espacio-md);
+}
+
+.resumen-eleccion h3 {
+  font-size: var(--tipo-medio);
+  color: var(--color-fondo);
+}
+
+.texto-destacado-rojo {
+  color: var(--color-primario);
+  font-size: var(--tipo-grande);
+  font-weight: 800;
+  display: block;
+  /* Lo manda al renglón de abajo */
+  margin-top: var(--espacio-xs);
+}
+
+/* Estructura de las secciones internas (Datos / Tarjeta) */
+.seccion-form-pago {
+  margin-bottom: var(--espacio-lg);
+}
+
+.seccion-form-pago:last-child {
+  margin-bottom: 0;
+}
+
+.titulo-rojo-pago {
+  color: var(--color-primario);
+  font-size: var(--tipo-chico);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: var(--espacio-sm);
+  padding-bottom: var(--espacio-sm);
+  border-bottom: 1px solid rgba(108, 117, 125, 0.2);
+}
+
+/* Grilla para poner inputs uno al lado del otro */
+.grilla-inputs-pago {
+  display: grid;
+  grid-template-columns: 1fr;
+  /* 1 columna en celular */
+  gap: var(--espacio-sm);
+  margin-bottom: var(--espacio-sm);
+}
+
+/* Ajustes para selects igual que los inputs */
+.campo-grupo select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  font-family: var(--fuente-principal);
+  font-size: var(--tipo-parrafo);
+  background-color: #FFFFFF;
+  color: var(--color-fondo);
+  outline: none;
+  transition: border-color 0.2s ease;
+  appearance: none;
+  /* Limpia el estilo del navegador */
+}
+
+/* Opciones de método (Tarjetas horizontales) */
+.opciones-metodo {
+  display: flex;
+  gap: var(--espacio-sm);
+  margin-bottom: var(--espacio-md);
+  width: 100%;
+  max-width: 100%;
+  /* Forzamos a que ocupe todo el ancho disponible */
+}
+
+.tarjeta-metodo {
+  flex: 1;
+  /* Esto hace que se dividan el ancho 50/50 exacto */
+  display: flex;
+  flex-direction: column;
+  /* Apilamos ícono y texto */
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  border: 2px solid var(--color-borde);
+  /* Borde un poco más grueso para que parezca botón */
+  border-radius: 8px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #FFFFFF;
+  color: var(--color-primario);
+  /* Pinta el SVG del color principal */
+}
+
+.tarjeta-metodo svg {
+  fill: currentColor;
+  /* Asegura que el ícono tome el color primario de la tarjeta */
+}
+
+.tarjeta-metodo input {
+  display: none;
+}
+
+.tarjeta-metodo:has(input:checked) {
+  border-color: var(--color-primario);
+  background-color: rgba(171, 16, 24, 0.05);
+}
+
+.metodo-texto {
+  font-size: var(--tipo-base);
+  font-weight: 700;
+  color: var(--color-fondo);
+  /* Mantiene el texto oscuro */
+}
+
+.datos-banco {
+  background-color: var(--color-fondo-secundario);
+  padding: var(--espacio-sm);
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+/* Contenedor relativo para el campo de tarjeta */
+.input-con-icono {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* El input debe tener más espacio a la izquierda para que el texto no pise el logo */
+.input-con-icono input {
+  padding-left: 48px !important;
+  width: 100%;
+}
+
+/* El contenedor del logo posicionado de forma absoluta a la izquierda */
+.icono-dentro-input {
+  position: absolute;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  z-index: 2;
+}
+
+/* Estilos de texto provisorios por si es Visa (azul) */
+.logo-visa {
+  color: #1a1f71;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* --- AJUSTE TRANSFERENCIA: DATOS Y QR --- */
+.contenedor-transferencia {
+  display: flex;
+  align-items: flex-start;
+  /* Alineamos arriba para que el texto quede parejo */
+  gap: var(--espacio-lg);
+  /* Le damos un hueco más grande entre las dos mitades */
+  flex-wrap: wrap;
+  /* Permite que pasen abajo en celulares */
+}
+
+/* Le decimos a AMBAS cajas que ocupen exactamente lo mismo (50/50) */
+.contenedor-transferencia .datos-banco,
+.caja-qr {
+  flex: 1;
+  min-width: 280px;
+  /* LA MAGIA: Al achicar la pantalla y llegar a este ancho, se apilan verticalmente solas */
+}
+
+.contenedor-transferencia .datos-banco {
+  margin: 0;
+}
+
+/* --- AJUSTE CAJA QR --- */
+.caja-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* Alineamos el QR y el texto a la izquierda */
+  text-align: left;
+  /* Forzamos la alineación del texto */
+
+  /* Le damos el mismo margen interno lateral que tiene la caja de datos del banco */
+  padding: 0 var(--espacio-sm);
+}
+
+.caja-qr p {
+  color: var(--color-fondo);
+  /* Sin tamaño ni max-width, así fluye libre y hereda el diseño correcto */
+}
+
+/* El diseño del cuadradito del QR queda igual */
+.qr-mercadopago {
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+  border: 2px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 8px;
+  background-color: #FFFFFF;
+}
+
+.qr-mercadopago img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ==========================================================================
+   PIE DE PÁGINA (FOOTER)
+   ========================================================================== */
+.pie-pagina {
+  background-color: var(--color-fondo);
+  /* Aplica el gris oscuro (#151515) */
+  color: var(--color-texto);
+  padding: var(--espacio-md) 0;
+}
+
+.contenedor-footer {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--espacio-sm);
+  display: flex;
+  flex-direction: column;
+  /* Apilado en celulares */
+  gap: var(--espacio-lg);
+}
+
+.footer-columna {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-titulo {
+  color: var(--color-primario);
+  font-size: var(--tipo-chico);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: var(--espacio-sm);
+  letter-spacing: 0.5px;
+}
+
+/* 1. Emergencias */
+.footer-emergencia {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.numero-emergencia {
+  font-size: var(--tipo-grande);
+  /* Para que el 100 resalte */
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* 2. Ubicaciones */
+.lista-ubicaciones {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lista-ubicaciones li {
+  display: flex;
+  align-items: center;
+  /* Alinea el ícono con el texto */
+  gap: 8px;
+  font-size: var(--tipo-chico);
+  font-weight: 600;
+}
+
+/* 3. Accesos Rápidos */
+.lista-enlaces {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lista-enlaces a {
+  color: var(--color-texto);
+  text-decoration: none;
+  font-size: var(--tipo-chico);
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.lista-enlaces a:hover {
+  color: var(--color-secundario);
+}
+
+/* 4. Redes e Íconos */
+.redes-iconos {
+  display: flex;
+  gap: var(--espacio-xs);
+}
+
+.icono-amarillo {
+  color: var(--color-secundario);
+  width: 20px;
+  height: 20px;
+}
+
+.icono-grande {
+  width: 32px;
+  height: 32px;
+}
+
+.redes-iconos a {
+  transition: transform 0.2s ease;
+}
+
+.redes-iconos a:hover {
+  transform: translateY(-2px);
+  /* Pequeño salto al pasar el mouse en redes */
+}
+
+/* ==========================================================================
+   MEDIA QUERIES (VAN SIEMPRE AL FINAL DEL ARCHIVO)
+   ========================================================================== */
+
+/* --- OVERLAY PARA MÓVILES Y TABLETS CHICAS (Hasta 768px) --- */
+@media (max-width: 768px) {
+  .hero-presentacion::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-terciario);
+    /* Tu azul #00569E */
+    opacity: 0.5;
+    /* Regula este número (0.1 a 0.9) según qué tan oscuro lo quieras */
+    z-index: -1;
+    /* Lo manda detrás de las letras, pero por encima de la foto */
+  }
+}
+
+/* --- MÓVILES (Hasta 530px) --- */
+@media (max-width: 530px) {
+
+  /* 1. Centramos todo el contenedor principal */
+  .hero-contenido {
+    align-items: left;
+  }
+
+  /* 2. Centramos los textos del título y la bajada */
+  .hero-contenido h1,
+  .hero-bajada {
+    text-align: left;
+  }
+
+  /* 3. Apilamos los botones verticalmente */
+  .hero-acciones {
+    flex-direction: column;
+    width: 100%;
+    /* Le damos el ancho total para controlar los botones */
+  }
+
+  /* 4. Hacemos que los botones ocupen todo el ancho en el celular (opcional, pero queda muy bien) */
+  .hero-acciones a {
+    width: 100%;
+  }
+}
+
+/* --- 1. MENÚ HAMBURGUESA (Móviles y Tablets hasta 1050px) --- */
+@media (max-width: 1050px) {
+  .contenedor-navegacion {
+    position: relative;
+  }
+
+  .menu-navegacion {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: var(--espacio-sm);
+
+    /* ESTA ES LA LÍNEA QUE LO ARREGLA: Anula el margen de 64px de la versión de escritorio */
+    margin-right: 0;
+
+    min-width: 220px;
+    background-color: var(--color-primario);
+    padding: var(--espacio-md);
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    z-index: 999;
+  }
+
+  /* Devolvemos los textos a su posición natural */
+  .menu-navegacion ul {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--espacio-md);
+  }
+
+  .menu-navegacion li::after {
+    display: none;
+  }
+
+  .menu-navegacion li {
+    padding: 0;
+    width: 100%;
+    text-align: left;
+  }
+
+  .menu-toggle-checkbox:checked~.menu-navegacion {
+    display: block;
+  }
+}
+
+/* --- 2. TABLET BASE (768px en adelante) --- */
+@media (min-width: 768px) {
+
+  /* Se aplican los márgenes laterales de 64px a todos los contenedores principales */
+  .contenedor-navegacion {
+    padding: var(--espacio-sm) var(--espacio-lg);
+  }
+
+  .hero-contenido,
+  .contenedor-historia,
+  .contenedor-datos,
+  .contenedor-cuarteles,
+  .contenedor-sumate,
+  .contenedor-contacto,
+  .contenedor-donar {
+    padding: 0 var(--espacio-lg);
+  }
+
+  .contenedor-footer {
+    padding: 0 var(--espacio-lg);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* El formulario de pago pasa a múltiples columnas en pantallas grandes */
+  .grilla-inputs-pago {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--espacio-md);
+  }
+
+  .modulo-pago {
+    padding: var(--espacio-md) var(--espacio-md) var(--espacio-lg) var(--espacio-md);
+  }
+
+}
+
+/* --- 3. ESCRITORIO NAVEGACIÓN (1051px en adelante) --- */
+@media (min-width: 1051px) {
+
+  /* Apagamos el menú hamburguesa y mostramos la barra normal */
+  .menu-hamburguesa {
+    display: none;
+  }
+
+  .nav-derecha {
+    margin-left: 0;
+  }
+
+  .menu-navegacion {
+    margin-right: var(--espacio-lg);
+  }
+
+  /* Distribución en fila para la sección de datos */
+  .contenedor-datos {
+    flex-direction: row;
+    justify-content: space-around;
+    /* Reparte el espacio equitativamente */
+    padding: 0 var(--espacio-lg);
+    /* Respeta el margen de 64px de las otras secciones */
+  }
+}
+
+/* --- 4. ESCRITORIO LAYOUT COMPLETO (1280px en adelante) --- */
+@media (min-width: 1280px) {
+
+  /* CINTA DE EMERGENCIAS: Frena la animación y distribuye los teléfonos */
+  .cinta-track {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--espacio-lg);
+    justify-content: center;
+    animation: none;
+  }
+
+  .emergencia-grupo:nth-child(n+4) {
+    display: none;
+  }
+
+  .emergencia-grupo:nth-child(1)::after,
+  .emergencia-grupo:nth-child(2)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 24px;
+    background-color: var(--color-texto);
+    opacity: 0.5;
+  }
+
+  .contenedor-historia {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .historia-texto {
+    flex: 1;
+    padding-right: 0;
+  }
+
+  .historia-imagenes {
+    flex: 1;
+  }
+
+  .grilla-redes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--espacio-md);
+  }
+
+  /* En escritorio, usamos flexbox para empujar los extremos a los márgenes */
+  .contenedor-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    /* Distribuye el espacio sobrante entre las columnas */
+    gap: var(--espacio-md);
+  }
+
+  /* Forzamos a que las direcciones NUNCA salten de renglón en pantallas grandes */
+  .lista-ubicaciones li {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 490px) {
+
+  /* Ocultamos el botón principal de la barra derecha */
+  .btn-donar-escritorio {
+    display: none !important;
+  }
+
+  /* Hacemos aparecer la opción adentro del menú hamburguesa como un ítem normal */
+  .item-donar-movil {
+    display: block;
+  }
+}
+
+/* --- AJUSTE HISTORIA: RANGO INTERMEDIO (1032px a 1279px) --- */
+@media (min-width: 1032px) and (max-width: 1279px) {
+
+  .contenedor-historia {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--espacio-md);
+  }
+
+  .historia-texto {
+    flex: 1;
+    padding-right: 0;
+  }
+
+  .historia-imagenes {
+    flex: 1;
+  }
+
+  /* ACÁ EXAGERAMOS EL DESNIVEL DE LAS IMÁGENES */
+  .imagen-historia:nth-child(1) {
+    transform: translateY(48px);
+    /* La primera baja el doble que antes */
+  }
+
+  .imagen-historia:nth-child(2) {
+    transform: translateY(-48px);
+    /* La segunda sube el doble que antes */
+  }
+
+}
+
+/* --- AJUSTE HISTORIA: IMÁGENES ALINEADAS (Hasta 1031px) --- */
+@media (max-width: 1031px) {
+
+  /* 1. Hacemos que las imágenes sean cuadradas o casi cuadradas */
+  .imagen-historia {
+    aspect-ratio: 1 / 1;
+    /* 1/1 es un cuadrado perfecto. Si querés que sean apenitas rectangulares probá con 4/3 */
+  }
+
+  /* 2. Alineamos las dos imágenes a la misma altura eliminando el desplazamiento */
+  .imagen-historia:nth-child(1),
+  .imagen-historia:nth-child(2) {
+    transform: translateY(0);
+  }
+
+}
+
+/* --- AJUSTE HISTORIA: IMÁGENES VERTICALES EN CELULAR (Hasta 768px) --- */
+@media (max-width: 768px) {
+
+  .contenedor-historia {
+    gap: var(--espacio-sm);
+  }
+
+  .imagen-historia {
+    aspect-ratio: 3 / 4;
+    /* Anula el cuadrado y vuelve a la proporción vertical original */
+  }
+
+}
+
+/* --- AJUSTE DATOS ESTADÍSTICOS: GRILLA 2x2 (Hasta 1050px) --- */
+@media (max-width: 1050px) {
+
+  .contenedor-datos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Crea exactamente 2 columnas del mismo ancho */
+    gap: var(--espacio-lg) var(--espacio-sm);
+    /* Separación: grande en vertical, chica en horizontal */
+    justify-items: center;
+    /* Asegura que cada bloque quede bien centrado en su mitad de la pantalla */
+  }
+
+}
+
+/* --- AJUSTE DATOS ESTADÍSTICOS: COLUMNA ÚNICA (Hasta 500px) --- */
+@media (max-width: 500px) {
+
+  .contenedor-datos {
+    grid-template-columns: 1fr;
+    /* Cambia de 2 columnas a 1 sola que ocupa todo el ancho */
+    gap: var(--espacio-lg);
+    /* Le devolvemos un margen vertical amplio para que respiren */
+  }
+
+}
+
+/* --- AJUSTE CUARTELES: GRILLA ASIMÉTRICA (1100px en adelante) --- */
+@media (min-width: 1100px) {
+
+  /* Acá pegamos la magia de grilla para que empiece antes */
+  .grilla-cuarteles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: var(--espacio-md);
+    min-height: 500px;
+  }
+
+  .cuartel-principal {
+    grid-row: span 2;
+  }
+
+  .tarjeta-cuartel {
+    min-height: auto;
+  }
+}
+
+/* --- AJUSTE CUARTELES: APILADOS CON PRINCIPAL MÁS ALTO (Hasta 1099px) --- */
+@media (max-width: 1099px) {
+  .cuartel-principal {
+    /* Las tarjetas normales miden 250px por defecto. A esta le damos más altura para que destaque. */
+    min-height: 400px;
+  }
+}
+
+/* --- AJUSTE CUARTELES: MÓVILES CHICOS (Hasta 450px) --- */
+@media (max-width: 450px) {
+
+  /* 1. Achicamos los textos de las direcciones */
+  .info-cuartel p {
+    font-size: var(--tipo-parrafo);
+  }
+
+  .info-cuartel p svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* 2. Devolvemos la tarjeta principal al mismo tamaño que las otras */
+  .cuartel-principal {
+    min-height: 250px;
+  }
+
+}
+
+/* --- AJUSTE SUMATE: DOS COLUMNAS (1100px en adelante) --- */
+@media (min-width: 1000px) {
+
+  .contenedor-sumate {
+    display: grid;
+
+    /* ACÁ ESTÁ LA CLAVE: El texto toma el espacio sobrante (1fr) y el form queda clavado en 450px */
+    grid-template-columns: 1fr 450px;
+
+    align-items: center;
+    gap: var(--espacio-lg);
+  }
+
+  .sumate-izquierda {
+    justify-content: space-between;
+    height: 100%;
+  }
+
+}
+
+/* --- AJUSTE SUMATE: VISTA APILADA (Hasta 999px) --- */
+@media (max-width: 999px) {
+
+  /* 1. Le sacamos el límite de ancho para que los textos fluyan de lado a lado */
+  .sumate-bajada,
+  .nota-cadetes {
+    max-width: 100%;
+  }
+
+  /* 2. "Desintegramos" la caja izquierda para que sus elementos pasen a depender del contenedor general */
+  .sumate-izquierda {
+    display: contents;
+  }
+
+  /* 3. Reordenamos visualmente los elementos de arriba hacia abajo */
+  .sumate-textos {
+    order: 1;
+    /* Títulos y párrafo van arriba */
+  }
+
+  .sumate-derecha {
+    order: 2;
+    /* El formulario pasa al medio */
+  }
+
+  .nota-cadetes {
+    order: 3;
+    /* La nota de los menores de 18 queda al final */
+  }
+
+}
+
+/* --- AJUSTE SUMATE: OPTIMIZACIÓN DE ESPACIO EN FORMULARIO (Hasta 430px) --- */
+@media (max-width: 430px) {
+
+  .sumate-derecha {
+    /* Mantiene 32px arriba/abajo, pero baja a 16px a la izquierda/derecha */
+    padding: var(--espacio-md) var(--espacio-sm);
+  }
+
+}
+
+/* --- AJUSTE REDES: MANTENER FORMA RECTANGULAR (Hasta 500px) --- */
+@media (max-width: 500px) {
+
+  .tarjeta-red {
+    min-height: auto;
+    /* Anulamos los 300px fijos para destrabar la altura */
+    aspect-ratio: 16 / 9;
+    /* Forzamos un formato rectangular panorámico */
+  }
+
+}
+
+/* --- AJUSTE DONACIONES: 3 COLUMNAS (1000px en adelante) --- */
+@media (min-width: 1000px) {
+  .grilla-donaciones {
+    flex-direction: row;
+    flex-wrap: wrap;
+    /* Permite que el panel de pago se acomode abajo */
+    justify-content: center;
+    align-items: stretch;
+    gap: var(--espacio-sm);
+  }
+
+  .tarjeta-donacion {
+    flex: 1;
+    /* Se achican proporcionalmente juntas */
+    max-width: 100%;
+  }
+
+  .modulo-pago {
+    width: 100%;
+    order: 4;
+    /* Fuerza visualmente al panel a quedarse debajo de las 3 opciones */
+  }
+}
+
+/* --- AJUSTE DONACIONES: APILADAS Y ANCHO COMPLETO (Hasta 999px) --- */
+@media (max-width: 999px) {
+  .tarjeta-donacion {
+    max-width: 100%;
+    /* Anula el límite de 380px para que ocupe todo el ancho sin huecos */
+  }
+}
+
+/* --- AJUSTE DONACIONES: OPTIMIZAR ESPACIO DEL MÓDULO DE PAGO EN CELULARES (Hasta 600px) --- */
+@media (max-width: 600px) {
+
+  .modulo-pago {
+    /* Mantiene los 32px arriba/abajo, pero baja los laterales a 8px (var(--espacio-xs)) */
+    padding: var(--espacio-md) var(--espacio-xs);
+  }
+
+  /* Opcional: También podemos achicar el padding interno de las opciones de método de pago */
+  .tarjeta-metodo {
+    padding: 16px 8px;
+  }
+
+}
+
+/* --- AJUSTE FOOTER: GRILLA 2x2 EN MÓVILES (De 400px a 767px) --- */
+@media (min-width: 375px) and (max-width: 767px) {
+
+  .contenedor-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Crea las dos columnas */
+    gap: var(--espacio-lg) var(--espacio-sm);
+    /* Separación: 64px en vertical, 16px en horizontal */
+  }
+
+}
+
+/* --- AJUSTES TRANSFERENCIA Y TEXTO EFECTIVO EN MÓVILES (Hasta 768px) --- */
+@media (max-width: 768px) {
+
+  /* 1. Forzamos a que el QR pase abajo siempre, anulando el rebote */
+  .contenedor-transferencia {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* 2. Achicamos la variable de fuente al siguiente nivel (--tipo-nav = 12px) */
+  .info-efectivo-donacion p {
+    font-size: var(--tipo-nav);
+  }
+
+}
