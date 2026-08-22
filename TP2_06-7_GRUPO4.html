@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP2 - Sistema de Signos Reactivos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* ==============================================================
+           ZONA DE EDICIÓN CSS: COLORES DE FONDO Y DISEÑO GENERAL
+           ============================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #f2f4f7; 
+            color: #2e3136;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 800px;
+        }
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: #1a1c1e; 
+            line-height: 1.3;
+        }
+        
+        .system-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            max-width: 1140px;
+            width: 100%;
+        }
+        
+        .interface-card {
+            background-color: #ffffff; 
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 24px rgba(32, 35, 38, 0.015);
+            border: 1px solid rgba(32, 35, 38, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+        }
+
+        .interface-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(32, 35, 38, 0.04);
+        }
+        
+        .canvas-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #e3e7ec; 
+            position: relative;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: crosshair;
+            touch-action: none; 
+        }
+        
+        .info {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            padding-top: 4px;
+        }
+        .concept-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #43474d;
+            letter-spacing: -0.1px;
+        }
+
+        @media (max-width: 900px) {
+            body { padding: 20px 10px; }
+            header { margin-bottom: 25px; }
+            h1 { font-size: 1.25rem; }
+            .system-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                max-width: 450px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Sistema de signos de representation geométrica, cinética y reactiva</h1>
+    </header>
+
+    <div class="system-grid">
+        <div class="interface-card">
+            <div class="canvas-container"><canvas id="canvas-memoria"></canvas></div>
+            <div class="info"><span class="concept-title">Memoria</span></div>
+        </div>
+        <div class="interface-card">
+            <div class="canvas-container"><canvas id="canvas-herencia"></canvas></div>
+            <div class="info"><span class="concept-title">Herencia</span></div>
+        </div>
+        <div class="interface-card">
+            <div class="canvas-container"><canvas id="canvas-caducidad"></canvas></div>
+            <div class="info"><span class="concept-title">Caducidad</span></div>
+        </div>
+
+        <div class="interface-card">
+            <div class="canvas-container"><canvas id="canvas-identidad"></canvas></div>
+            <div class="info"><span class="concept-title">Identidad</span></div>
+        </div>
+        <div class="interface-card">
+            <div class="canvas-container"><canvas id="canvas-empatia"></canvas></div>
+            <div class="info"><span class="concept-title">Empatía</span></div>
+        </div>
+        <div class="interface-card">
+            <div class="canvas-container"><canvas id="canvas-colaboracion"></canvas></div>
+            <div class="info"><span class="concept-title">Colaboración</span></div>
+        </div>
+
+        <div class="interface-card">
+            <div class="canvas-container"><canvas id="canvas-incertidumbre"></canvas></div>
+            <div class="info"><span class="concept-title">Incertidumbre</span></div>
+        </div>
+        <div class="interface-card">
+            <div class="canvas-container"><canvas id="canvas-expectativa"></canvas></div>
+            <div class="info"><span class="concept-title">Expectativa</span></div>
+        </div>
+        <div class="interface-card">
+            <div class="canvas-container"><canvas id="canvas-ansiedad"></canvas></div>
+            <div class="info"><span class="concept-title">Ansiedad</span></div>
+        </div>
+    </div>
+
+    <script>
+        const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
+
+        const initCanvas = (id, drawFn, setupFn = null, customClickFn = null) => {
+            const canvas = document.getElementById(id);
+            const ctx = canvas.getContext('2d');
+            const size = 400;
+            canvas.width = size;
+            canvas.height = size;
+
+            let mouse = { x: size/2, y: size/2, targetX: size/2, targetY: size/2, isDown: false, inside: false };
+
+            const updateCoordinates = (clientX, clientY) => {
+                const rect = canvas.getBoundingClientRect();
+                mouse.targetX = (clientX - rect.left) * (size / rect.width);
+                mouse.targetY = (clientY - rect.top) * (size / rect.height);
+            };
+
+            canvas.addEventListener('mousemove', (e) => { updateCoordinates(e.clientX, e.clientY); mouse.inside = true; });
+            canvas.addEventListener('mouseenter', () => mouse.inside = true);
+            canvas.addEventListener('mouseleave', () => { mouse.inside = false; mouse.isDown = false; });
+            
+            canvas.addEventListener('mousedown', () => { mouse.isDown = true; if (customClickFn) customClickFn(); });
+            canvas.addEventListener('mouseup', () => mouse.isDown = false);
+
+            canvas.addEventListener('touchmove', (e) => {
+                if(e.touches.length > 0) { updateCoordinates(e.touches[0].clientX, e.touches[0].clientY); mouse.inside = true; }
+                if (e.cancelable) e.preventDefault(); 
+            }, {passive: false});
+
+            canvas.addEventListener('touchstart', (e) => {
+                mouse.isDown = true; mouse.inside = true;
+                if(e.touches.length > 0) updateCoordinates(e.touches[0].clientX, e.touches[0].clientY);
+                if (customClickFn) customClickFn();
+                if (e.cancelable) e.preventDefault(); 
+            }, {passive: false});
+
+            canvas.addEventListener('touchend', () => { mouse.isDown = false; mouse.inside = false; });
+
+            if (setupFn) setupFn();
+
+            let time = 0;
+            function tick() {
+                time += 0.02;
+                mouse.x = lerp(mouse.x, mouse.targetX, 0.1);
+                mouse.y = lerp(mouse.y, mouse.targetY, 0.1);
+
+                ctx.fillStyle = '#e3e7ec'; 
+                ctx.fillRect(0, 0, size, size);
+
+                drawFn(ctx, size, mouse, time);
+                requestAnimationFrame(tick);
+            }
+            tick();
+        };
+
+        const drawSolidTriangle = (ctx, x, y, r, rotation, scaleW = 1, scaleH = 1) => {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(rotation); ctx.beginPath();
+            ctx.moveTo(0, -r * scaleH); ctx.lineTo(r * 0.866 * scaleW, r * 0.5 * scaleH); ctx.lineTo(-r * 0.866 * scaleW, r * 0.5 * scaleH);
+            ctx.closePath(); ctx.fill(); ctx.restore();
+        };
+
+        // ==============================================================
+        // SUBSISTEMA 1 (CÍRCULOS)
+        // ==============================================================
+
+        let memHistory = [];
+        initCanvas('canvas-memoria', (ctx, size, mouse, time) => {
+            let activeX = mouse.inside ? mouse.x : size/2 + Math.sin(time * 1.5) * 80;
+            let activeY = mouse.inside ? mouse.y : size/2 + Math.cos(time * 0.8) * 60;
+            memHistory.push({x: activeX, y: activeY, age: 0});
+            memHistory.forEach((p) => {
+                p.age++;
+                let lifeRatio = 1 - p.age / 50;
+                if (lifeRatio > 0) {
+                    ctx.fillStyle = `rgba(112, 128, 144, ${lifeRatio * 0.55})`;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, lifeRatio * 14, 0, Math.PI * 2); ctx.fill();
+                }
+            });
+            memHistory = memHistory.filter(p => p.age < 50);
+        });
+
+        let herenciaLayers = 1; let herenciaTimer = 600; let layerOpacities = [1, 1, 1, 1, 1, 1];
+        initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
+            let speedFactor = mouse.inside ? 2.5 : 1;
+            if (herenciaLayers > 1) {
+                herenciaTimer--;
+                if (herenciaTimer <= 0) {
+                    let topLayerIdx = herenciaLayers - 1;
+                    layerOpacities[topLayerIdx] -= 0.0166; 
+                    if (layerOpacities[topLayerIdx] <= 0) { layerOpacities[topLayerIdx] = 1; herenciaLayers--; }
+                }
+            }
+            for(let i = herenciaLayers; i > 0; i--) {
+                let wavePulse = Math.sin(time * 1.5 * speedFactor + i) * 6;
+                let currentRadius = 30 + (i - 1) * 26 + wavePulse;
+                let currentOpacity = (0.13 * (7 - i)) * layerOpacities[i - 1];
+                ctx.fillStyle = `rgba(112, 128, 144, ${Math.max(0, currentOpacity)})`;
+                ctx.beginPath(); ctx.arc(size/2, size/2, Math.max(0, currentRadius), 0, Math.PI * 2); ctx.fill();
+            }
+        }, null, () => {
+            if (herenciaLayers < 6) { layerOpacities[herenciaLayers] = 1; herenciaLayers++; }
+            herenciaTimer = 600;
+        });
+
+        let cadNodes = [];
+        initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
+            cadNodes.forEach((p, idx) => {
+                let maxBaseSize = 13; let targetSize = maxBaseSize;
+                let floatX = Math.sin(time * 0.6 + p.seedX) * 2.5; let floatY = Math.cos(time * 0.5 + p.seedY) * 2.5;
+                let idlePulse = Math.sin(time * 0.4 + idx) * 1.5;
+                let renderX = p.ox + floatX; let renderY = p.oy + floatY;
+
+                if (mouse.inside) {
+                    let distance = Math.sqrt((mouse.x - renderX)**2 + (mouse.y - renderY)**2);
+                    if (distance < 55) { targetSize = lerp(0, maxBaseSize + idlePulse, distance / 55); } 
+                    else { targetSize = maxBaseSize + idlePulse; }
+                } else { targetSize = maxBaseSize + idlePulse; }
+                
+                let isGrowing = targetSize > p.currentSize;
+                p.currentSize = lerp(p.currentSize, targetSize, isGrowing ? 0.0035 : 0.2);
+                
+                if (p.currentSize > 0.1) {
+                    ctx.fillStyle = `rgba(112, 128, 144, ${(p.currentSize / (maxBaseSize + 2)) * 0.85})`;
+                    ctx.beginPath(); ctx.arc(renderX, renderY, Math.max(0, p.currentSize), 0, Math.PI * 2); ctx.fill();
+                }
+            });
+        }, () => {
+            // Modificado: Se recalcularon los offsets de inicio a 102px y espaciados de 65px para centrar el 4x4
+            for(let x = 0; x < 4; x++) {
+                for(let y = 0; y < 4; y++) { 
+                    cadNodes.push({ ox: 102 + x * 65, oy: 102 + y * 65, currentSize: 13, seedX: Math.random() * 100, seedY: Math.random() * 100 }); 
+                }
+            }
+        });
+
+        // ==============================================================
+        // SUBSISTEMA 2 (CUADRADOS)
+        // ==============================================================
+
+        // Tu código de Identidad se mantiene 100% idéntico a tu última versión fija
+        let idCircleRadius = 9; 
+        let idRingRadius = 100;
+        let idLineAlpha = 0.35;
+        let currentSquareSizes = [32, 32, 32, 32, 32, 32, 32, 32];
+
+        initCanvas('canvas-identidad', (ctx, size, mouse, time) => {
+            let targetRadius, targetRingRadius, targetLineAlpha;
+
+            if (mouse.inside) {
+                targetRadius = 48;         
+                targetRingRadius = 88;     
+                targetLineAlpha = 0.0;     
+            } else {
+                targetRadius = 9;          
+                targetRingRadius = 100;    
+                targetLineAlpha = 0.35;    
+            }
+
+            idCircleRadius = lerp(idCircleRadius, targetRadius, 0.1);
+            idRingRadius = lerp(idRingRadius, targetRingRadius, 0.1);
+            idLineAlpha = lerp(idLineAlpha, targetLineAlpha, 0.15);
+
+            let nodes = [];
+            for (let i = 0; i < 8; i++) {
+                let angle = (i * Math.PI) / 4; 
+                let nx = size / 2 + Math.cos(angle) * idRingRadius;
+                let ny = size / 2 + Math.sin(angle) * idRingRadius;
+                
+                let targetSize = 10; 
+                
+                if (!mouse.inside) {
+                    if (i === 2 || i === 6) {
+                        targetSize = 60; 
+                    } else if (i === 0 || i === 4) {
+                        targetSize = 20; 
+                    } else {
+                        targetSize = 40; 
+                    }
+                }
+
+                currentSquareSizes[i] = lerp(currentSquareSizes[i], targetSize, 0.1);
+                nodes.push({ x: nx, y: ny, size: currentSquareSizes[i] });
+            }
+
+            if (idLineAlpha > 0.01) {
+                ctx.strokeStyle = `rgba(132, 156, 139, ${idLineAlpha})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(nodes[0].x, nodes[0].y);
+                for (let i = 1; i < nodes.length; i++) {
+                    ctx.lineTo(nodes[i].x, nodes[i].y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = 'rgba(186, 196, 191, 0.9)';
+            nodes.forEach(node => {
+                ctx.fillRect(node.x - node.size / 2, node.y - node.size / 2, node.size, node.size);
+            });
+
+            ctx.fillStyle = '#7a9282';
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, idCircleRadius, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        initCanvas('canvas-empatia', (ctx, size, mouse, time) => {
+            let p1 = { x: 150, y: 200 + Math.sin(time)*15 }; let p2 = mouse.inside ? { x: mouse.x, y: mouse.y } : { x: 260, y: 200 + Math.cos(time)*15 };
+            let d = Math.sqrt((p2.x-p1.x)**2 + (p2.y-p1.y)**2); let closeness = Math.max(0, 1 - d / 150);
+            ctx.fillStyle = 'rgba(132, 156, 139, 0.25)'; 
+            ctx.save(); ctx.translate(p1.x, p1.y); ctx.rotate(Math.atan2(p2.y - p1.y, p2.x - p1.x)); ctx.fillRect(0, -2, d, 4); ctx.restore();
+            let radius = 35 + closeness * 10; 
+            ctx.fillStyle = `rgba(132, 156, 139, ${0.6 + closeness * 0.4})`;
+            if (closeness > 0.55) { ctx.fillRect(p1.x - radius, p1.y - radius, radius * 2, radius * 2); } 
+            else { ctx.beginPath(); ctx.arc(p1.x, p1.y, radius, 0, Math.PI * 2); ctx.fill(); }
+            ctx.fillStyle = '#a6bda9'; ctx.fillRect(p2.x - 16, p2.y - 16, 32, 32);
+        });
+
+        let cNodes = Array.from({length: 16}, (_, i) => ({
+            x: 100 + (i % 4) * 65, y: 100 + Math.floor(i / 4) * 65,
+            ox: 100 + (i % 4) * 65, oy: 100 + Math.floor(i / 4) * 65
+        }));
+        initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
+            cNodes.forEach((p, i) => {
+                let autoX = p.ox + Math.sin(time + i) * 8; let autoY = p.oy + Math.cos(time + i) * 8;
+                if (mouse.inside) {
+                    let d = Math.sqrt((mouse.x - p.x)**2 + (mouse.y - p.y)**2);
+                    if(d < 80) { p.x = lerp(p.x, mouse.x, 0.07); p.y = lerp(p.y, mouse.y, 0.07); } 
+                    else { p.x = lerp(p.x, autoX, 0.1); p.y = lerp(p.y, autoY, 0.1); }
+                } else { p.x = lerp(p.x, autoX, 0.1); p.y = lerp(p.y, autoY, 0.1); }
+            });
+            ctx.fillStyle = 'rgba(132, 156, 139, 0.2)';
+            for(let i=0; i<cNodes.length; i++) {
+                for(let j=i+1; j<cNodes.length; j++) {
+                    let dx = cNodes[j].x - cNodes[i].x; let dy = cNodes[j].y - cNodes[i].y;
+                    let d = Math.sqrt(dx*dx + dy*dy);
+                    if(d < 75) {
+                        ctx.save(); ctx.translate(cNodes[i].x, cNodes[i].y); ctx.rotate(Math.atan2(dy, dx));
+                        ctx.fillRect(0, -1.5, d, 3); ctx.restore();
+                    }
+                }
+            }
+            cNodes.forEach(p => { ctx.fillStyle = '#6b826e'; ctx.fillRect(p.x - 5, p.y - 5, 10, 10); });
+        });
+
+        // ==============================================================
+        // SUBSISTEMA 3 (TRIÁNGULOS)
+        // ==============================================================
+
+        let clones = [];
+        const baseOffsets = [
+            {x: -45, y: -45, rot: 0.4},  {x: 45, y: -45, rot: -0.7},
+            {x: -45, y: 45, rot: 1.2},   {x: 45, y: 45, rot: -1.5},
+            {x: -75, y: 0, rot: 2.1},    {x: 75, y: 0, rot: -2.4},
+            {x: 0, y: -75, rot: 0.9},    {x: 0, y: 75, rot: -1.1},
+            {x: -30, y: -80, rot: -0.3}, {x: 30, y: 80, rot: 1.7},
+            {x: -80, y: 30, rot: -2.0},  {x: 80, y: -30, rot: 0.6},
+            {x: -110, y: -40, rot: -1.4}, {x: 110, y: 40, rot: 0.8},
+            {x: -40, y: -110, rot: 2.5},  {x: 40, y: 110, rot: -2.2},
+            {x: -90, y: -90, rot: -0.5},  {x: 90, y: 90, rot: 1.3},
+            {x: -100, y: 70, rot: -1.9},  {x: 100, y: -70, rot: 0.2},
+            {x: -130, y: 0, rot: 0.5},    {x: 130, y: 0, rot: -0.9},
+            {x: 0, y: -130, rot: -1.3},   {x: 0, y: 130, rot: 2.3}
+        ];
+        let centerPos = { x: 200, y: 200, rot: 0, opacity: 0.85 };
+
+        initCanvas('canvas-incertidumbre', (ctx, size, mouse, time) => {
+            if (clones.length === 0) {
+                baseOffsets.forEach(off => {
+                    clones.push({ x: size/2, y: size/2, targetX: size/2, targetY: size/2, baseRot: off.rot, currentRot: 0, scale: 1, opacity: 0 });
+                });
+            }
+
+            clones.forEach((c, idx) => {
+                let targetX, targetY, targetRot, targetOpa, targetScale;
+                let glitchX = 0, glitchY = 0;
+
+                if (mouse.inside) {
+                    targetX = size/2 + baseOffsets[idx].x;
+                    targetY = size/2 + baseOffsets[idx].y;
+                    targetRot = c.baseRot + (time * 0.02 * (idx % 2 === 0 ? 1 : -1));
+                    targetOpa = 0.42; 
+                    targetScale = 1;
+
+                    if (mouse.isDown && Math.random() < 0.3) {
+                        glitchX = (Math.random() - 0.5) * 35;
+                        glitchY = (Math.random() - 0.5) * 35;
+                        targetScale = 0.35 + Math.random() * 0.95;
+                        targetOpa = 0.05 + Math.random() * 0.5;
+                    }
+                } else {
+                    targetX = size/2;
+                    targetY = size/2;
+                    targetRot = 0;
+                    targetOpa = 0.0;
+                    targetScale = 1;
+                }
+
+                c.x = lerp(c.x, targetX + glitchX, 0.12);
+                c.y = lerp(c.y, targetY + glitchY, 0.12);
+                c.currentRot = lerp(c.currentRot, targetRot, 0.1);
+                c.opacity = lerp(c.opacity, targetOpa, 0.15);
+                c.scale = lerp(c.scale, targetScale, 0.15);
+
+                if (c.opacity > 0.01) {
+                    ctx.fillStyle = `rgba(141, 132, 156, ${c.opacity})`;
+                    drawSolidTriangle(ctx, c.x, c.y, 55 * c.scale, c.currentRot);
+                }
+            });
+
+            let targetCenterOpa = mouse.inside ? 0.0 : 0.85;
+            centerPos.opacity = lerp(centerPos.opacity, targetCenterOpa, mouse.inside ? 1.0 : 0.12);
+            centerPos.rot = lerp(centerPos.rot, time * 0.12, 0.1);
+
+            if (centerPos.opacity > 0.01) {
+                ctx.fillStyle = `rgba(141, 132, 156, ${centerPos.opacity})`;
+                drawSolidTriangle(ctx, size/2, size/2, 55, centerPos.rot);
+            }
+        });
+
+        // 9. EXPECTATIVA (Asignado al canvas-expectativa en la posición 8)
+        let expParticles = [];
+        let expBaseScale = 1;
+        let expTensionGrowth = 1.0; 
+
+        initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
+            let centerScale = 1;
+            
+            if (mouse.inside) {
+                expTensionGrowth = Math.min(1.5, expTensionGrowth + 0.0018); 
+                centerScale = mouse.isDown ? 1.35 : 1.0;
+                
+                if (Math.random() < 0.18) {
+                    let angle = Math.random() * Math.PI * 2;
+                    expParticles.push({ x: size/2 + Math.cos(angle) * 180, y: size/2 + Math.sin(angle) * 180, speed: mouse.isDown ? 6 : 3.2 });
+                }
+            } else {
+                expTensionGrowth = Math.max(1.0, expTensionGrowth - 0.008);
+            }
+            
+            expBaseScale = lerp(expBaseScale, centerScale, 0.15);
+
+            ctx.fillStyle = 'rgba(141, 132, 156, 0.32)';
+            expParticles.forEach((p) => {
+                let dx = size/2 - p.x; let dy = size/2 - p.y; let d = Math.sqrt(dx*dx + dy*dy);
+                if (d > 5) {
+                    p.x += (dx / d) * p.speed; p.y += (dy / d) * p.speed;
+                    drawSolidTriangle(ctx, p.x, p.y, 12, Math.atan2(dy, dx) + Math.PI/2, 0.25, 4.5);
+                }
+            });
+            expParticles = expParticles.filter(p => Math.sqrt((size/2 - p.x)**2 + (size/2 - p.y)**2) > 15);
+
+            let pulse = Math.sin(time * (mouse.inside ? 5 : 2)) * (mouse.inside ? 4 : 2);
+            let finalRadius = (50 + pulse) * expBaseScale * expTensionGrowth;
+
+            ctx.fillStyle = '#6f667d'; 
+            drawSolidTriangle(ctx, size/2, size/2, finalRadius, 0);
+        });
+
+        // 8. ANSIEDAD (Asignado al canvas-ansiedad en la posición 9)
+        let ansNodes = Array.from({length: 16}, (_, i) => ({
+            x: 100 + (i % 4) * 65, y: 100 + Math.floor(i / 4) * 65,
+            ox: 100 + (i % 4) * 65, oy: 100 + Math.floor(i / 4) * 65,
+            vx: 0, vy: 0, angle: 0
+        }));
+        let anxietyChaosLines = [];
+
+        initCanvas('canvas-ansiedad', (ctx, size, mouse, time) => {
+            ansNodes.forEach((p, i) => {
+                let targetSize, vibroX = 0, vibroY = 0;
+                if (mouse.inside) {
+                    p.vx += (Math.random() - 0.5) * 5; p.vy += (Math.random() - 0.5) * 5;
+                    targetSize = mouse.isDown ? 7 : 14;
+                    let dx = p.x - mouse.x; let dy = p.y - mouse.y;
+                    let d = Math.sqrt(dx*dx + dy*dy);
+                    if(d < 80) { p.vx += (dx / d) * 2.5; p.vy += (dy / d) * 2.5; }
+                    p.x += p.vx; p.y += p.vy; p.vx *= 0.85; p.vy *= 0.85; p.angle += Math.sqrt(p.vx*p.vx + p.vy*p.vy) * 0.05;
+                    if(p.x < 30 || p.x > size - 30) p.vx *= -1; if(p.y < 30 || p.y > size - 30) p.vy *= -1;
+                } else {
+                    p.x = lerp(p.x, p.ox, 0.12); p.y = lerp(p.y, p.oy, 0.12); p.vx = 0; p.vy = 0; p.angle = lerp(p.angle, 0, 0.1); targetSize = 14;
+                    vibroX = (Math.random() - 0.5) * 3; vibroY = (Math.random() - 0.5) * 3;
+                }
+                ctx.fillStyle = '#7a718c'; ctx.save(); ctx.translate(p.x + vibroX, p.y + vibroY); ctx.rotate(p.angle); ctx.beginPath();
+                ctx.moveTo(0, -targetSize * 0.6); ctx.lineTo(targetSize * 0.5, targetSize * 0.5); ctx.lineTo(-targetSize * 0.5, targetSize * 0.5);
+                ctx.closePath(); ctx.fill(); ctx.restore();
+            });
+
+            if (mouse.inside) {
+                if (Math.random() < 0.25) {
+                    anxietyChaosLines.push({
+                        x: Math.random() * size, y: Math.random() * size,
+                        angle: Math.random() * Math.PI * 2,
+                        speed: 8 + Math.random() * 6,
+                        life: 1.0
+                    });
+                }
+            }
+
+            ctx.fillStyle = 'rgba(141, 132, 156, 0.25)';
+            anxietyChaosLines.forEach(l => {
+                l.x += Math.cos(l.angle) * l.speed;
+                l.y += Math.sin(l.angle) * l.speed;
+                l.life -= 0.03;
+                drawSolidTriangle(ctx, l.x, l.y, 11 * l.life, l.angle + Math.PI/2, 0.28, 8.0);
+            });
+            anxietyChaosLines = anxietyChaosLines.filter(l => l.life > 0);
+        });
+    </script>
+</body>
+</html>
