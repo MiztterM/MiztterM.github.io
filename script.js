@@ -388,59 +388,43 @@ initCanvas('canvas-memoria', (ctx, size, mouse, time) => {
 
 // --- HERENCIA ---
 let herenciaLayersCount = 1; // Empieza con 1 capa visible
-let herenciaInitialPinchDist = null;
-let herenciaGestureActive = false;
+let herenciaBaseDist = null;
+let herenciaGestureLocked = false; // Bloquea hasta que sueltes
 
 initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
     const maxLayers = 6;
     const baseRadius = 28;
     const spreadStep = 24;
 
-    // Lógica de detección de gesto de zoom con 2 dedos (Pinch) o arrastre de mouse
-    if (mouse.touches.length >= 2) {
-        const [a, b] = mouse.touches;
-        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+    // Determinamos si el usuario está interactuando actualmente
+    const isInteracting = (mouse.touches.length >= 2) || mouse.isDown;
 
-        if (!herenciaGestureActive) {
-            // Comienza un nuevo gesto de estirar
-            herenciaInitialPinchDist = dist;
-            herenciaGestureActive = true;
+    if (isInteracting) {
+        // Obtenemos la distancia actual (ya sea entre dos dedos o del mouse al centro)
+        let currentDist = 0;
+        if (mouse.touches.length >= 2) {
+            const [a, b] = mouse.touches;
+            currentDist = Math.hypot(a.x - b.x, a.y - b.y);
         } else {
-            // Si estiró lo suficiente (más de 35 píxeles de apertura), suma una capa y corta el gesto
-            if (dist - herenciaInitialPinchDist > 35) {
-                if (herenciaLayersCount < maxLayers) {
-                    herenciaLayersCount++;
-                }
-                herenciaInitialPinchDist = dist; // Resetea para requerir otro estiramiento si quiere más
-            } 
-            // Si encogió mucho (gesto opuesto), puede restar capas si querés, o lo dejamos solo acumulativo
-            else if (herenciaInitialPinchDist - dist > 35) {
-                if (herenciaLayersCount > 1) {
-                    herenciaLayersCount--;
-                }
-                herenciaInitialPinchDist = dist;
-            }
+            currentDist = Math.hypot(mouse.targetX - size / 2, mouse.targetY - size / 2);
         }
-    } else if (mouse.isDown) {
-        // Alternativa para computadora con mouse: click y arrastrar hacia afuera desde el centro
-        const dist = Math.hypot(mouse.targetX - size / 2, mouse.targetY - size / 2);
-        
-        if (!herenciaGestureActive) {
-            herenciaInitialPinchDist = dist;
-            herenciaGestureActive = true;
-        } else {
-            // Si arrastró hacia afuera más de 40 píxeles desde el inicio del click
-            if (dist - herenciaInitialPinchDist > 40) {
+
+        if (herenciaBaseDist === null) {
+            // Registramos el punto de partida al iniciar el contacto
+            herenciaBaseDist = currentDist;
+        } else if (!herenciaGestureLocked) {
+            // Si el usuario separó los dedos o alejó el mouse más de 45 píxeles desde el inicio
+            if (currentDist - herenciaBaseDist > 45) {
                 if (herenciaLayersCount < maxLayers) {
-                    herenciaLayersCount++;
+                    herenciaLayersCount++; // Suma exactamente un anillo
                 }
-                herenciaInitialPinchDist = dist;
+                herenciaGestureLocked = true; // BLOQUEO: Ya sumó, no puede sumar otro hasta soltar
             }
         }
     } else {
-        // Al soltar los dedos o el click, reseteamos el estado del gesto para habilitar el siguiente
-        herenciaGestureActive = false;
-        herenciaInitialPinchDist = null;
+        // Al soltar los dedos o el click, destrabamos el gesto y reseteamos la distancia base
+        herenciaGestureLocked = false;
+        herenciaBaseDist = null;
     }
 
     // Dibujamos las capas acumuladas hasta el número actual
