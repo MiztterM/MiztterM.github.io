@@ -387,51 +387,70 @@ initCanvas('canvas-memoria', (ctx, size, mouse, time) => {
 });
 
 // --- HERENCIA ---
-let herenciaGrowth = 0; 
-let herenciaLastPinchDist = null;
-let herenciaLastMouseDist = null;
+let herenciaLayersCount = 1; // Empieza con 1 capa visible
+let herenciaInitialPinchDist = null;
+let herenciaGestureActive = false;
 
 initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
-    let delta = 0;
-
-    // Lógica original de cálculo de zoom in / zoom out
-    if (mouse.touches.length >= 2) {
-        const [a, b] = mouse.touches;
-        const dist = Math.hypot(a.x - b.x, a.y - b.y);
-        if (herenciaLastPinchDist !== null) delta = (dist - herenciaLastPinchDist) * 0.006;
-        herenciaLastPinchDist = dist;
-        herenciaLastMouseDist = null;
-    } else {
-        herenciaLastPinchDist = null;
-        if (mouse.isDown) {
-            const dist = Math.hypot(mouse.targetX - size / 2, mouse.targetY - size / 2);
-            if (herenciaLastMouseDist !== null) delta = (dist - herenciaLastMouseDist) * 0.006;
-            herenciaLastMouseDist = dist;
-        } else {
-            herenciaLastMouseDist = null;
-        }
-    }
-
-    // herenciaGrowth varía de 0 (cero anillos extra) a 1 (todos los anillos)
-    herenciaGrowth = Math.min(1, Math.max(0, herenciaGrowth + delta));
-    if (!mouse.inside) herenciaGrowth *= 0.996; 
-
     const maxLayers = 6;
     const baseRadius = 28;
     const spreadStep = 24;
 
-    // Calculamos cuántas capas deben mostrarse según el progreso del zoom
-    // 1 capa base siempre visible + hasta 5 capas adicionales
-    const visibleLayers = 1 + Math.floor(herenciaGrowth * (maxLayers - 1));
+    // Lógica de detección de gesto de zoom con 2 dedos (Pinch) o arrastre de mouse
+    if (mouse.touches.length >= 2) {
+        const [a, b] = mouse.touches;
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
 
-    for (let i = visibleLayers; i > 0; i--) {
+        if (!herenciaGestureActive) {
+            // Comienza un nuevo gesto de estirar
+            herenciaInitialPinchDist = dist;
+            herenciaGestureActive = true;
+        } else {
+            // Si estiró lo suficiente (más de 35 píxeles de apertura), suma una capa y corta el gesto
+            if (dist - herenciaInitialPinchDist > 35) {
+                if (herenciaLayersCount < maxLayers) {
+                    herenciaLayersCount++;
+                }
+                herenciaInitialPinchDist = dist; // Resetea para requerir otro estiramiento si quiere más
+            } 
+            // Si encogió mucho (gesto opuesto), puede restar capas si querés, o lo dejamos solo acumulativo
+            else if (herenciaInitialPinchDist - dist > 35) {
+                if (herenciaLayersCount > 1) {
+                    herenciaLayersCount--;
+                }
+                herenciaInitialPinchDist = dist;
+            }
+        }
+    } else if (mouse.isDown) {
+        // Alternativa para computadora con mouse: click y arrastrar hacia afuera desde el centro
+        const dist = Math.hypot(mouse.targetX - size / 2, mouse.targetY - size / 2);
+        
+        if (!herenciaGestureActive) {
+            herenciaInitialPinchDist = dist;
+            herenciaGestureActive = true;
+        } else {
+            // Si arrastró hacia afuera más de 40 píxeles desde el inicio del click
+            if (dist - herenciaInitialPinchDist > 40) {
+                if (herenciaLayersCount < maxLayers) {
+                    herenciaLayersCount++;
+                }
+                herenciaInitialPinchDist = dist;
+            }
+        }
+    } else {
+        // Al soltar los dedos o el click, reseteamos el estado del gesto para habilitar el siguiente
+        herenciaGestureActive = false;
+        herenciaInitialPinchDist = null;
+    }
+
+    // Dibujamos las capas acumuladas hasta el número actual
+    for (let i = herenciaLayersCount; i > 0; i--) {
         const wave = Math.sin(time * 1.2 + i) * 3;
         const radius = baseRadius + (i - 1) * spreadStep + wave;
         
-        // Opacidad fija por nivel para que no se escalen de golpe, sino que aparezcan en su posición
+        // Opacidad fija por nivel
         const opacity = 0.12 * (maxLayers - i + 1);
         
-        // ACÁ ESTABA EL ERROR: Faltaban las comillas invertidas ``
         ctx.fillStyle = `rgba(112, 128, 144, ${Math.max(0.08, opacity)})`;
         ctx.beginPath(); 
         ctx.arc(size / 2, size / 2, Math.max(0, radius), 0, Math.PI * 2); 
@@ -978,84 +997,112 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
 });
 
 // --- ANSIEDAD ---
-let ansNodes = Array.from({length: 16}, (_, i) => ({
-    x: 100 + (i % 4) * 65, y: 100 + Math.floor(i / 4) * 65,
-    vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2, angle: 0
+// 8 triángulos grandes
+let ansNodes = Array.from({length: 8}, (_, i) => ({
+    x: 120 + (i % 3) * 80 + Math.random() * 20, 
+    y: 120 + Math.floor(i / 3) * 80 + Math.random() * 20,
+    vx: (Math.random() - 0.5) * 0.5, 
+    vy: (Math.random() - 0.5) * 0.5, 
+    angle: Math.random() * Math.PI * 2,
+    baseRadius: 22
 }));
-let ansDraw = { active: false, path: [{ x: 200, y: 200 }], handle: { x: 200, y: 200, ox: 200, oy: 200 }, completeFlash: 0 };
+
+let ansState = {
+    inactivityTimer: null,
+    lastClickTime: 0,
+    clickCount: 0,
+    targetSpeedMult: 1.0,
+    currentSpeedMult: 1.0,
+    targetSizeMult: 1.0,
+    currentSizeMult: 1.0
+};
+
+const triggerAnsiedadInteraction = () => {
+    const now = Date.now();
+
+    // Reducción de tamaño instantánea
+    ansState.targetSizeMult = 0.5;
+
+    // Cooldown de 1 segundo entre clics con aceleración hasta 10 clics
+    if (now - ansState.lastClickTime >= 1000) {
+        ansState.lastClickTime = now;
+        
+        if (ansState.clickCount < 10) {
+            ansState.clickCount++;
+            ansState.targetSpeedMult = 1.0 + (ansState.clickCount * 1.1);
+        }
+    }
+
+    // Reiniciar temporizador de 5 segundos de inactividad
+    if (ansState.inactivityTimer) clearTimeout(ansState.inactivityTimer);
+    ansState.inactivityTimer = setTimeout(() => {
+        ansState.clickCount = 0;
+        ansState.targetSpeedMult = 1.0;
+        ansState.targetSizeMult = 1.0;
+    }, 5000);
+};
 
 initCanvas('canvas-ansiedad', (ctx, size, mouse, time) => {
-    ansNodes.forEach((p) => {
-        p.vx += (Math.random() - 0.5) * 4.2;
-        p.vy += (Math.random() - 0.5) * 4.2;
-        p.vx *= 0.9; p.vy *= 0.9;
-        p.x += p.vx; p.y += p.vy;
-        p.angle += Math.hypot(p.vx, p.vy) * 0.05;
-        if (p.x < 25) { p.x = 25; p.vx *= -1; }
-        if (p.x > size - 25) { p.x = size - 25; p.vx *= -1; }
-        if (p.y < 25) { p.y = 25; p.vy *= -1; }
-        if (p.y > size - 25) { p.y = size - 25; p.vy *= -1; }
-
-        ctx.fillStyle = '#7a718c';
-        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle); ctx.beginPath();
-        ctx.moveTo(0, -8); ctx.lineTo(7, 7); ctx.lineTo(-7, 7);
-        ctx.closePath(); ctx.fill(); ctx.restore();
-    });
+    // Transición ultra suave de velocidad y tamaño
+    ansState.currentSpeedMult = lerp(ansState.currentSpeedMult, ansState.targetSpeedMult, 0.015);
+    ansState.currentSizeMult = lerp(ansState.currentSizeMult, ansState.targetSizeMult, 0.03);
 
     const points = getActivePoints(mouse);
-    const pointer = points.length > 0 ? points[0] : null;
-    const handle = ansDraw.handle;
+    const pointer = points.length > 0 ? points[0] : (mouse.inside ? { x: mouse.x, y: mouse.y } : null);
 
-    if (!ansDraw.active) {
-        handle.x = lerp(handle.x, handle.ox, 0.2);
-        handle.y = lerp(handle.y, handle.oy, 0.2);
-        if (pointer && Math.hypot(pointer.x - handle.ox, pointer.y - handle.oy) < 45) {
-            ansDraw.active = true;
-            ansDraw.path = [{ x: handle.ox, y: handle.oy }];
-        }
-    } else if (pointer) {
-        handle.x = pointer.x; handle.y = pointer.y;
-        const last = ansDraw.path[ansDraw.path.length - 1];
-        if (Math.hypot(handle.x - last.x, handle.y - last.y) > 6) ansDraw.path.push({ x: handle.x, y: handle.y });
+    // Margen delimitador (más cerrado en reposo para no tocar bordes, más amplio en aceleración)
+    const padding = lerp(85, 35, (ansState.currentSpeedMult - 1) / 10);
 
-        for (const n of ansNodes) {
-            if (Math.hypot(handle.x - n.x, handle.y - n.y) < 20) {
-                ansDraw.path = [{ x: handle.ox, y: handle.oy }];
-                handle.x = handle.ox; handle.y = handle.oy;
-                ansDraw.active = false;
-                break;
+    ansNodes.forEach((p, i) => {
+        // 1. Repulsión entre los propios triángulos (evita que se amontonen)
+        for (let j = i + 1; j < ansNodes.length; j++) {
+            const other = ansNodes[j];
+            const dx = other.x - p.x;
+            const dy = other.y - p.y;
+            const dist = Math.hypot(dx, dy);
+            const minDist = (p.baseRadius + other.baseRadius) * ansState.currentSizeMult * 1.8;
+
+            if (dist < minDist && dist > 0.001) {
+                const force = (minDist - dist) * 0.02;
+                p.vx -= (dx / dist) * force;
+                p.vy -= (dy / dist) * force;
+                other.vx += (dx / dist) * force;
+                other.vy += (dy / dist) * force;
             }
         }
 
-        if (ansDraw.active && ansDraw.path.length > 14 && Math.hypot(handle.x - handle.ox, handle.y - handle.oy) < 28) {
-            ansDraw.completeFlash = 22;
-            ansDraw.active = false;
+        // 2. Repulsión respecto al puntero/mouse
+        if (pointer) {
+            const dx = p.x - pointer.x;
+            const dy = p.y - pointer.y;
+            const dist = Math.hypot(dx, dy);
+            const fleeRadius = 120;
+
+            if (dist < fleeRadius && dist > 0.001) {
+                const force = (1 - dist / fleeRadius) * 2.5 * ansState.currentSpeedMult;
+                p.vx += (dx / dist) * force;
+                p.vy += (dy / dist) * force;
+            }
         }
-    } else {
-        ansDraw.active = false;
-        ansDraw.path = [{ x: handle.ox, y: handle.oy }];
-        handle.x = handle.ox; handle.y = handle.oy;
-    }
 
-    if (ansDraw.path.length > 1) {
-        ctx.strokeStyle = ansDraw.completeFlash > 0
-            ? `rgba(255, 255, 255, ${0.5 + Math.sin(time * 20) * 0.5})`
-            : 'rgba(122, 113, 140, 0.85)';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(ansDraw.path[0].x, ansDraw.path[0].y);
-        ansDraw.path.forEach(p => ctx.lineTo(p.x, p.y));
-        ctx.stroke();
-    }
+        // 3. Movimiento caótico base
+        p.vx += (Math.random() - 0.5) * 0.7 * ansState.currentSpeedMult;
+        p.vy += (Math.random() - 0.5) * 0.7 * ansState.currentSpeedMult;
+        p.vx *= 0.92; 
+        p.vy *= 0.92;
+        p.x += p.vx; 
+        p.y += p.vy;
+        p.angle += Math.hypot(p.vx, p.vy) * 0.02;
 
-    if (ansDraw.completeFlash > 0) {
-        ansDraw.completeFlash--;
-        if (ansDraw.completeFlash === 0) ansDraw.path = [{ x: handle.ox, y: handle.oy }];
-    }
+        // 4. Paredes delimitadoras para alejarse de los bordes según la inactividad
+        if (p.x < padding) { p.x = padding; p.vx *= -0.8; }
+        if (p.x > size - padding) { p.x = size - padding; p.vx *= -0.8; }
+        if (p.y < padding) { p.y = padding; p.vy *= -0.8; }
+        if (p.y > size - padding) { p.y = size - padding; p.vy *= -0.8; }
 
-    const auraR = 6 + Math.sin(time * 4) * 2;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-    ctx.beginPath(); ctx.arc(handle.x, handle.y, auraR + 8, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.arc(handle.x, handle.y, 6, 0, Math.PI * 2); ctx.fill();
-});
+        // Renderizado del triángulo
+        const r = p.baseRadius * ansState.currentSizeMult;
+        ctx.fillStyle = '#7a718c';
+        drawSolidTriangle(ctx, p.x, p.y, r, p.angle);
+    });
+}, null, triggerAnsiedadInteraction);
