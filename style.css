@@ -91,12 +91,10 @@ h1 {
     width: 100vw; height: 100vh;
     background: #fff; 
     z-index: 1000;
-    /* Cambiado de flex a block para habilitar el scroll nativo */
     display: block; 
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.4s ease;
-    /* Propiedades clave para el scroll en mobile */
     overflow-y: auto; 
     -webkit-overflow-scrolling: touch; 
 }
@@ -113,7 +111,7 @@ h1 {
     display: flex;
     flex-direction: row;
     position: relative;
-    min-height: 100%; /* Deja que el contenido fluya */
+    min-height: 100%;
 }
 
 /* Clases utilitarias para el botón responsive */
@@ -209,12 +207,17 @@ h1 {
     .mob-only { display: block !important; }
     
     .system-grid { grid-template-columns: 1fr; max-width: 400px; }
-    h1 { font-size: 1.4rem; }
     
+    /* ACÁ AJUSTAMOS EL TÍTULO PRINCIPAL PARA CELULARES */
+    h1 { font-size: 1rem; letter-spacing: -0.5px; }
+    .subtitle { font-size: 0.95rem; }
+    
+    /* Ajuste opcional para el título de la vista detalle en celu si lo ves muy grande */
+    #detail-title { font-size: 1.9rem; }
+
     .detail-content {
         flex-direction: column;
         padding: 30px 20px;
-        /* Hacemos que los elementos suban en vez de centrarse, ideal para scrollear */
         justify-content: flex-start; 
         align-items: center;
     }
@@ -233,14 +236,13 @@ h1 {
     }
 
     .detail-right canvas {
-        max-width: 100%; /* Que el canvas ocupe el ancho en celular */
+        max-width: 100%; 
     }
 
-    /* Botón al fondo en celular */
     .btn-volver.mob-only {
         position: relative;
         margin-top: 20px;
-        margin-bottom: 50px; /* Margen para que respire abajo al scrollear */
+        margin-bottom: 50px; 
         font-size: 1rem;
     }
 }
