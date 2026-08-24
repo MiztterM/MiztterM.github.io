@@ -101,6 +101,20 @@ document.querySelectorAll('.btn-volver').forEach(btn => {
     });
 });
 
+// Lógica del botón de Modo Lámina
+const btnFullscreenGrid = document.getElementById('btn-fullscreen-grid');
+if (btnFullscreenGrid) {
+    btnFullscreenGrid.addEventListener('click', () => {
+        document.body.classList.toggle('fullscreen-grid-mode');
+        
+        if (document.body.classList.contains('fullscreen-grid-mode')) {
+            btnFullscreenGrid.innerText = 'VER NORMAL';
+        } else {
+            btnFullscreenGrid.innerText = 'MODO LÁMINA';
+        }
+    });
+}
+
 // ==============================================================
 // 3. MOTOR DE RENDERIZADO Y UTILIDADES
 // ==============================================================
