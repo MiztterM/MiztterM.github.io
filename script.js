@@ -228,8 +228,6 @@ const getActivePoints = (mouse) => {
 
 // --- MEMORIA ---
 let memGrid = [];
-// Eliminamos MEM_COLS y MEM_ROWS para romper la grilla
-
 const MEM_FADE_IN = 22, MEM_HOLD = 26, MEM_FADE_OUT = 22, MEM_GAP = 18;
 const memSmoothstep = (x) => x * x * (3 - 2 * x);
 
@@ -271,110 +269,150 @@ memSequence = memGenerateSequence(memRound);
 
 initCanvas('canvas-memoria', (ctx, size, mouse, time) => {
     if (memGrid.length === 0) {
-        // Composición orgánica ("constelación") con tamaños y posiciones específicas
         const constellation = [
-            { x: 150, y: 120, r: 18 }, // 0: Arriba izquierda
-            { x: 230, y: 100, r: 24 }, // 1: Arriba centro (Grande)
-            { x: 300, y: 150, r: 14 }, // 2: Arriba derecha (Chico)
-            { x: 100, y: 200, r: 15 }, // 3: Medio izquierda
-            { x: 200, y: 190, r: 20 }, // 4: Centro
-            { x: 270, y: 230, r: 18 }, // 5: Medio derecha
-            { x: 130, y: 280, r: 22 }, // 6: Abajo izquierda (Grande)
-            { x: 210, y: 270, r: 14 }, // 7: Abajo centro (Chico)
-            { x: 280, y: 310, r: 16 }  // 8: Abajo derecha
+            { x: 150, y: 120, r: 18 }, 
+            { x: 230, y: 100, r: 24 }, 
+            { x: 300, y: 150, r: 14 }, 
+            { x: 100, y: 200, r: 15 }, 
+            { x: 200, y: 190, r: 20 }, 
+            { x: 270, y: 230, r: 18 }, 
+            { x: 130, y: 280, r: 22 }, 
+            { x: 210, y: 270, r: 14 }, 
+            { x: 280, y: 310, r: 16 }  
         ];
 
         constellation.forEach((pos, i) => {
             memGrid.push({
                 x: pos.x, y: pos.y, 
                 r: pos.r, 
-                id: i, // Mantenemos los IDs del 0 al 8 para que funcione el Simón Dice
+                id: i,
                 seedX: Math.random() * 100, seedY: Math.random() * 100
             });
         });
     }
 
+    const isInDetailView = overlay.classList.contains('active') && currentCanvas && currentCanvas.id === 'canvas-memoria';
     const points = getActivePoints(mouse);
-    const litOpacity = new Array(9).fill(0);
+    
+    let litOpacity = new Array(9).fill(0);
+    let colorMixTarget = new Array(9).fill(0);
+    let flashRgb = MEM_OK_RGB;
 
-    if (memPhase === 'idle') {
-        if (points.length > 0) {
-            const touchedAny = points.some(pt => memGrid.some(g => Math.hypot(g.x - pt.x, g.y - pt.y) < g.r + 20));
-            if (touchedAny) {
-                memPhase = 'showing';
+    if (!isInDetailView) {
+        // --- ESTADO BASE (EN LA GRILLA) ---
+        // Sincronizado a 260 frames para que coincida exactamente con Herencia
+        const frame = Math.floor(time * 60) % 260;
+        
+        // 1. Ilumina secuencialmente (más rápido para entrar en tiempo)
+        if (frame > 15 && frame < 55) litOpacity[1] = Math.sin((frame - 15) / 40 * Math.PI);
+        if (frame > 65 && frame < 105) litOpacity[4] = Math.sin((frame - 65) / 40 * Math.PI);
+        if (frame > 115 && frame < 155) litOpacity[6] = Math.sin((frame - 115) / 40 * Math.PI);
+        
+        // 2. Fase final: Enciende TODOS los 9 círculos sincronizado con el final de Herencia
+        if (frame > 170 && frame < 250) {
+            let lit = 0;
+            if (frame < 190) lit = (frame - 170) / 20; // Fade in
+            else if (frame > 230) lit = 1 - ((frame - 230) / 20); // Fade out
+            else lit = 1; // Hold
+            
+            for (let i = 0; i < 9; i++) {
+                litOpacity[i] = Math.max(litOpacity[i] || 0, lit); 
+            }
+        }
+
+        if (memPhase !== 'idle') {
+            memPhase = 'idle';
+            memShowIdx = 0;
+            memInputIdx = 0;
+            memFlashTimer = 0;
+        }
+
+    } else {
+        // --- ESTADO INTERACTIVO (EN DETALLE) ---
+        if (memPhase === 'idle') {
+            if (points.length > 0) {
+                const touchedAny = points.some(pt => memGrid.some(g => Math.hypot(g.x - pt.x, g.y - pt.y) < g.r + 20));
+                if (touchedAny) {
+                    memPhase = 'showing';
+                    memShowIdx = 0; memShowTimer = 0; memShowSub = 'in';
+                }
+            }
+        } else if (memPhase === 'showing') {
+            const frameIds = memSequence[memShowIdx];
+            memShowTimer++;
+
+            let frac = 0;
+            if (memShowSub === 'in') {
+                frac = memSmoothstep(Math.min(1, memShowTimer / MEM_FADE_IN));
+                if (memShowTimer >= MEM_FADE_IN) { memShowSub = 'hold'; memShowTimer = 0; }
+            } else if (memShowSub === 'hold') {
+                frac = 1;
+                if (memShowTimer >= MEM_HOLD) { memShowSub = 'out'; memShowTimer = 0; }
+            } else if (memShowSub === 'out') {
+                frac = 1 - memSmoothstep(Math.min(1, memShowTimer / MEM_FADE_OUT));
+                if (memShowTimer >= MEM_FADE_OUT) { memShowSub = 'gap'; memShowTimer = 0; }
+            } else { 
+                frac = 0;
+                if (memShowTimer >= MEM_GAP) {
+                    memShowTimer = 0;
+                    memShowSub = 'in';
+                    memShowIdx++;
+                    if (memShowIdx >= memSequence.length) {
+                        memShowIdx = 0;
+                        memPhase = 'input';
+                        memInputIdx = 0;
+                        memEpisodeOpen = false;
+                        memEpisodeHits = new Set();
+                    }
+                }
+            }
+            frameIds.forEach(id => { litOpacity[id] = frac; });
+
+        } else if (memPhase === 'input') {
+            if (points.length > 0) {
+                if (!memEpisodeOpen) { memEpisodeOpen = true; memEpisodeHits = new Set(); }
+                points.forEach(pt => {
+                    const found = memGrid.find(g => Math.hypot(g.x - pt.x, g.y - pt.y) < g.r + 16);
+                    if (found) memEpisodeHits.add(found.id);
+                });
+                memEpisodeHits.forEach(id => { litOpacity[id] = 1; });
+            } else if (memEpisodeOpen) {
+                memEpisodeOpen = false;
+                const expected = new Set(memSequence[memInputIdx]);
+                const same = expected.size === memEpisodeHits.size &&
+                    [...expected].every(id => memEpisodeHits.has(id));
+
+                if (!same) {
+                    memFlashIds = [...memSequence[memInputIdx]];
+                    memPhase = 'flash'; memFlashTimer = 0; memFlashOk = false;
+                } else {
+                    memInputIdx++;
+                    if (memInputIdx >= memSequence.length) {
+                        memFlashIds = memGrid.map(g => g.id); 
+                        memPhase = 'flash'; memFlashTimer = 0; memFlashOk = true;
+                    }
+                }
+            }
+        } else if (memPhase === 'flash') {
+            memFlashTimer++;
+            memFlashIds.forEach(id => { litOpacity[id] = 1; });
+            if (memFlashTimer >= memFlashHold) {
+                if (memFlashOk) { memRound++; memSequence = memGenerateSequence(memRound); }
                 memShowIdx = 0; memShowTimer = 0; memShowSub = 'in';
-            }
-        }
-    } else if (memPhase === 'showing') {
-        const frame = memSequence[memShowIdx];
-        memShowTimer++;
-
-        let frac = 0;
-        if (memShowSub === 'in') {
-            frac = memSmoothstep(Math.min(1, memShowTimer / MEM_FADE_IN));
-            if (memShowTimer >= MEM_FADE_IN) { memShowSub = 'hold'; memShowTimer = 0; }
-        } else if (memShowSub === 'hold') {
-            frac = 1;
-            if (memShowTimer >= MEM_HOLD) { memShowSub = 'out'; memShowTimer = 0; }
-        } else if (memShowSub === 'out') {
-            frac = 1 - memSmoothstep(Math.min(1, memShowTimer / MEM_FADE_OUT));
-            if (memShowTimer >= MEM_FADE_OUT) { memShowSub = 'gap'; memShowTimer = 0; }
-        } else { 
-            frac = 0;
-            if (memShowTimer >= MEM_GAP) {
-                memShowTimer = 0;
-                memShowSub = 'in';
-                memShowIdx++;
-                if (memShowIdx >= memSequence.length) {
-                    memShowIdx = 0;
-                    memPhase = 'input';
-                    memInputIdx = 0;
-                    memEpisodeOpen = false;
-                    memEpisodeHits = new Set();
-                }
+                memPhase = 'showing';
             }
         }
 
-        frame.forEach(id => { litOpacity[id] = frac; });
-
-    } else if (memPhase === 'input') {
-        if (points.length > 0) {
-            if (!memEpisodeOpen) { memEpisodeOpen = true; memEpisodeHits = new Set(); }
-            points.forEach(pt => {
-                const found = memGrid.find(g => Math.hypot(g.x - pt.x, g.y - pt.y) < g.r + 16);
-                if (found) memEpisodeHits.add(found.id);
-            });
-            memEpisodeHits.forEach(id => { litOpacity[id] = 1; });
-        } else if (memEpisodeOpen) {
-            memEpisodeOpen = false;
-            const expected = new Set(memSequence[memInputIdx]);
-            const same = expected.size === memEpisodeHits.size &&
-                [...expected].every(id => memEpisodeHits.has(id));
-
-            if (!same) {
-                memFlashIds = [...memSequence[memInputIdx]];
-                memPhase = 'flash'; memFlashTimer = 0; memFlashOk = false;
-            } else {
-                memInputIdx++;
-                if (memInputIdx >= memSequence.length) {
-                    memFlashIds = memGrid.map(g => g.id); 
-                    memPhase = 'flash'; memFlashTimer = 0; memFlashOk = true;
-                }
+        const globalMixTarget = memPhase === 'flash' ? 1 : 0;
+        flashRgb = memFlashOk ? MEM_OK_RGB : MEM_FAIL_RGB;
+        memGrid.forEach(g => {
+            if (memPhase === 'flash' && memFlashIds.includes(g.id)) {
+                colorMixTarget[g.id] = globalMixTarget;
             }
-        }
-    } else if (memPhase === 'flash') {
-        memFlashTimer++;
-        memFlashIds.forEach(id => { litOpacity[id] = 1; });
-        if (memFlashTimer >= memFlashHold) {
-            if (memFlashOk) { memRound++; memSequence = memGenerateSequence(memRound); }
-            memShowIdx = 0; memShowTimer = 0; memShowSub = 'in';
-            memPhase = 'showing';
-        }
+        });
     }
 
-    const colorMixTarget = memPhase === 'flash' ? 1 : 0;
-    const flashRgb = memFlashOk ? MEM_OK_RGB : MEM_FAIL_RGB;
-
+    // --- RENDERIZADO COMPARTIDO ---
     memGrid.forEach(g => {
         const orbitR = 9;
         const orbitAngle = time * 0.9 + g.seedX;
@@ -383,8 +421,7 @@ initCanvas('canvas-memoria', (ctx, size, mouse, time) => {
         const rx = g.x + floatX, ry = g.y + floatY;
 
         memCircleLit[g.id] = lerp(memCircleLit[g.id], litOpacity[g.id], 0.09);
-        const localColorTarget = memFlashIds.includes(g.id) ? colorMixTarget : 0;
-        memCircleColorMix[g.id] = lerp(memCircleColorMix[g.id], localColorTarget, 0.05);
+        memCircleColorMix[g.id] = lerp(memCircleColorMix[g.id], colorMixTarget[g.id], 0.05);
 
         const lit = memCircleLit[g.id];
         const mix = memCircleColorMix[g.id];
@@ -401,58 +438,142 @@ initCanvas('canvas-memoria', (ctx, size, mouse, time) => {
 });
 
 // --- HERENCIA ---
-let herenciaLayersCount = 1; // Empieza con 1 capa visible
+let herenciaLayersCount = 1; 
+let herenciaLayerProgress = 0; 
 let herenciaBaseDist = null;
-let herenciaGestureLocked = false; // Bloquea hasta que sueltes
+let herenciaGestureLocked = false; 
 
 initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
     const maxLayers = 6;
     const baseRadius = 28;
     const spreadStep = 24;
 
-    // Determinamos si el usuario está interactuando actualmente
-    const isInteracting = (mouse.touches.length >= 2) || mouse.isDown;
+    const isInDetailView = overlay.classList.contains('active') && currentCanvas && currentCanvas.id === 'canvas-herencia';
 
-    if (isInteracting) {
-        // Obtenemos la distancia actual (ya sea entre dos dedos o del mouse al centro)
-        let currentDist = 0;
-        if (mouse.touches.length >= 2) {
-            const [a, b] = mouse.touches;
-            currentDist = Math.hypot(a.x - b.x, a.y - b.y);
+    let drawSettled = herenciaLayersCount;
+    let drawProgress = herenciaLayerProgress;
+    let baseFadeOut = 1; 
+
+    if (!isInDetailView) {
+        // --- ESTADO BASE (EN LA GRILLA): Sincronizado a 260 frames con Memoria ---
+        const frame = Math.floor(time * 60) % 260;
+
+        if (frame < 15) {
+            drawSettled = 1; drawProgress = 0;
+        } else if (frame < 55) { 
+            drawSettled = 1; drawProgress = (frame - 15) / 40; 
+        } else if (frame < 65) {
+            drawSettled = 2; drawProgress = 0;
+        } else if (frame < 105) { 
+            drawSettled = 2; drawProgress = (frame - 65) / 40; 
+        } else if (frame < 115) {
+            drawSettled = 3; drawProgress = 0;
+        } else if (frame < 155) { 
+            drawSettled = 3; drawProgress = (frame - 115) / 40; 
+        } else if (frame < 170) {
+            drawSettled = 4; drawProgress = 0;
+        } else if (frame < 250) { 
+            drawSettled = 4; drawProgress = 0;
+            baseFadeOut = 1 - ((frame - 170) / 80); 
         } else {
-            currentDist = Math.hypot(mouse.targetX - size / 2, mouse.targetY - size / 2);
-        }
-
-        if (herenciaBaseDist === null) {
-            // Registramos el punto de partida al iniciar el contacto
-            herenciaBaseDist = currentDist;
-        } else if (!herenciaGestureLocked) {
-            // Si el usuario separó los dedos o alejó el mouse más de 45 píxeles desde el inicio
-            if (currentDist - herenciaBaseDist > 45) {
-                if (herenciaLayersCount < maxLayers) {
-                    herenciaLayersCount++; // Suma exactamente un anillo
-                }
-                herenciaGestureLocked = true; // BLOQUEO: Ya sumó, no puede sumar otro hasta soltar
-            }
+            drawSettled = 1; drawProgress = 0;
         }
     } else {
-        // Al soltar los dedos o el click, destrabamos el gesto y reseteamos la distancia base
-        herenciaGestureLocked = false;
-        herenciaBaseDist = null;
+        // --- ESTADO INTERACTIVO (EN DETALLE): Exclusivo para 2 dedos ---
+        // Verificamos estrictamente que haya 2 o más toques en pantalla
+        const isInteracting = mouse.touches.length >= 2;
+
+        if (isInteracting) {
+            // Calculamos la distancia únicamente entre el dedo 1 y el dedo 2
+            const [a, b] = mouse.touches;
+            let currentDist = Math.hypot(a.x - b.x, a.y - b.y);
+
+            if (herenciaBaseDist === null) {
+                herenciaBaseDist = currentDist;
+            } else if (!herenciaGestureLocked) {
+                let dragAmount = currentDist - herenciaBaseDist;
+                
+                // 1. GESTO DE EXPANDIR (Zoom In)
+                if (dragAmount > 0 && herenciaLayersCount < maxLayers) {
+                    herenciaLayerProgress = Math.min(1, dragAmount / 45);
+
+                    if (herenciaLayerProgress >= 1) {
+                        herenciaLayersCount++;
+                        herenciaLayerProgress = 0; 
+                        herenciaGestureLocked = true; 
+                    }
+                } 
+                // 2. GESTO DE ENCOGER (Zoom Out)
+                else if (dragAmount < 0 && herenciaLayersCount > 1) {
+                    herenciaLayerProgress = Math.max(-1, dragAmount / 45); 
+
+                    if (herenciaLayerProgress <= -1) {
+                        herenciaLayersCount--; 
+                        herenciaLayerProgress = 0; 
+                        herenciaGestureLocked = true; 
+                    }
+                }
+            }
+        } else {
+            if (herenciaLayerProgress !== 0 && !herenciaGestureLocked) {
+                herenciaLayerProgress = lerp(herenciaLayerProgress, 0, 0.2);
+                if (Math.abs(herenciaLayerProgress) < 0.01) herenciaLayerProgress = 0;
+            }
+            herenciaGestureLocked = false;
+            herenciaBaseDist = null;
+        }
+
+        if (herenciaLayerProgress < 0) {
+            drawSettled = herenciaLayersCount - 1;
+            drawProgress = 1.0 + herenciaLayerProgress; 
+        } else {
+            drawSettled = herenciaLayersCount;
+            drawProgress = herenciaLayerProgress;
+        }
     }
 
-    // Dibujamos las capas acumuladas hasta el número actual
-    for (let i = herenciaLayersCount; i > 0; i--) {
+    // --- RENDERIZADO ---
+
+    // 1. DIBUJAMOS LA CAPA NUEVA AL FONDO
+    if (drawProgress > 0.001 && drawSettled < maxLayers) {
+        const nextLayer = drawSettled + 1;
+        const wave = Math.sin(time * 1.2 + nextLayer) * 3;
+        const prevRadius = baseRadius + (drawSettled - 1) * spreadStep;
+        const targetRadius = baseRadius + (nextLayer - 1) * spreadStep;
+        
+        const radius = prevRadius + (targetRadius - prevRadius) * drawProgress + wave;
+        
+        let opacity = 0.55 - (nextLayer - 1) * 0.08; 
+        let finalOpacity = Math.max(0.08, opacity);
+        
+        if (!isInDetailView && nextLayer > 1) finalOpacity *= baseFadeOut;
+        
+        if (finalOpacity > 0.01) {
+            ctx.fillStyle = `rgba(112, 128, 144, ${finalOpacity})`;
+            ctx.beginPath(); 
+            ctx.arc(size / 2, size / 2, Math.max(0, radius), 0, Math.PI * 2); 
+            ctx.fill();
+        }
+    }
+
+    // 2. DIBUJAMOS LAS CAPAS FIJAS AL FRENTE
+    for (let i = drawSettled; i >= 1; i--) {
         const wave = Math.sin(time * 1.2 + i) * 3;
         const radius = baseRadius + (i - 1) * spreadStep + wave;
         
-        // Opacidad fija por nivel
-        const opacity = 0.12 * (maxLayers - i + 1);
+        let opacity = 0.55 - (i - 1) * 0.08; 
+        let finalOpacity = Math.max(0.08, opacity);
         
-        ctx.fillStyle = `rgba(112, 128, 144, ${Math.max(0.08, opacity)})`;
-        ctx.beginPath(); 
-        ctx.arc(size / 2, size / 2, Math.max(0, radius), 0, Math.PI * 2); 
-        ctx.fill();
+        if (!isInDetailView && i > 1) {
+            finalOpacity *= baseFadeOut;
+        }
+        
+        if (finalOpacity > 0.01) {
+            ctx.fillStyle = `rgba(112, 128, 144, ${finalOpacity})`;
+            ctx.beginPath(); 
+            ctx.arc(size / 2, size / 2, Math.max(0, radius), 0, Math.PI * 2); 
+            ctx.fill();
+        }
     }
 });
 
@@ -473,14 +594,21 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
             { x: size * 0.80, y: cy - 6,  r: 10, baseAlpha: 0.35 }
         ];
 
-        layout.forEach((pos) => {
+        layout.forEach((pos, idx) => {
             cadNodes.push({
                 ox: pos.x, oy: pos.y,
                 baseSize: pos.r,
                 baseAlpha: pos.baseAlpha,
                 state: 'idle',  // Estados: 'idle', 'vanishing', 'growing'
                 progress: 1,    // 1 = tamaño completo, 0 = invisible
-                seed: Math.random() * 100
+                seed: Math.random() * 100,
+                // Parpadeo leve constante en 2 círculos
+                isFlickering: idx === 1 || idx === 3,
+                flickerSpeed: 1.2 + Math.random() * 0.8,
+                flickerOffset: Math.random() * Math.PI * 2,
+                // Parámetros para respiración gradual de tamaño
+                pulseSpeed: 1.0 + Math.random() * 0.5,
+                pulseOffset: Math.random() * Math.PI * 2
             });
         });
     }
@@ -519,14 +647,27 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
             }
         }
 
-        let floatY = Math.sin(time * 0.6 + node.seed) * 2;
-        let currentAlpha = node.baseAlpha * node.progress;
-        let currentR = node.baseSize * node.progress;
+        // 1. Movimiento leve en su propio lugar (flotación en X e Y)
+        let floatX = Math.cos(time * 0.8 + node.seed) * 2.5;
+        let floatY = Math.sin(time * 0.8 + node.seed * 1.5) * 2.5;
+
+        // 2. Achicamiento más pronunciado (oscila de 50% hasta 100% de su tamaño base)
+        let sizePulse = 0.75 + Math.sin(time * node.pulseSpeed + node.pulseOffset) * 0.25;
+
+        // 3. Parpadeo leve de opacidad
+        let alphaMult = 1.0;
+        if (node.isFlickering) {
+            let pulse = (Math.sin(time * node.flickerSpeed + node.flickerOffset) + 1) / 2;
+            alphaMult = 0.55 + pulse * 0.45;
+        }
+
+        let currentAlpha = node.baseAlpha * node.progress * alphaMult;
+        let currentR = node.baseSize * node.progress * sizePulse;
 
         if (currentAlpha > 0.01 && currentR > 0.5) {
             ctx.fillStyle = `rgba(112, 128, 144, ${currentAlpha})`;
             ctx.beginPath();
-            ctx.arc(node.ox, node.oy + floatY, currentR, 0, Math.PI * 2);
+            ctx.arc(node.ox + floatX, node.oy + floatY, currentR, 0, Math.PI * 2);
             ctx.fill();
         }
     });
@@ -932,77 +1073,79 @@ initCanvas('canvas-incertidumbre', (ctx, size, mouse, time) => {
 let expAmbientLines = [];
 
 initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
-    const cx = size / 2;
-    const cy = size / 2;
+    const cx = size / 2;
+    const cy = size / 2;
 
-    // Detectar número de dedos o click activo
-    const activeTouchesCount = mouse.touches.length > 0
-        ? mouse.touches.length
-        : (mouse.isDown ? 1 : 0);
+    // Detectar número de dedos o click activo
+    const activeTouchesCount = mouse.touches.length > 0
+        ? mouse.touches.length
+        : (mouse.isDown ? 1 : 0);
 
-    // Mínimo 3 líneas base (0 contactos = 3 líneas, 1 contacto = 6 líneas, 2 contactos = 9 líneas, etc.)
-    const totalLinesNeeded = 3 + (activeTouchesCount * 3);
+    // Mínimo 3 líneas base (0 contactos = 3 líneas, 1 contacto = 6 líneas, 2 contactos = 9 líneas, etc.)
+    const totalLinesNeeded = 3 + (activeTouchesCount * 3);
 
-    // Ajustar dinámicamente el pool de líneas según la interacción táctil
-    while (expAmbientLines.length < totalLinesNeeded) {
-        expAmbientLines.push({
-            angle: Math.random() * Math.PI * 2,
-            dist: 140 + Math.random() * 50,
-            speed: 2.8 + Math.random() * 1.2
-        });
-    }
+    // Ajustar dinámicamente el pool de líneas según la interacción táctil
+    while (expAmbientLines.length < totalLinesNeeded) {
+        expAmbientLines.push({
+            angle: Math.random() * Math.PI * 2,
+            dist: 140 + Math.random() * 50,
+            speed: 2.8 + Math.random() * 1.2
+        });
+    }
 
-    const linesToDraw = expAmbientLines.slice(0, totalLinesNeeded);
-    const isInteracting = activeTouchesCount > 0;
-    const currentSpeed = isInteracting ? 4.2 : 2.5;
+    const linesToDraw = expAmbientLines.slice(0, totalLinesNeeded);
+    const isInteracting = activeTouchesCount > 0;
+    const currentSpeed = isInteracting ? 4.2 : 2.5;
 
-    // --- 1. RENDERIZADO DE LÍNEAS ---
-    ctx.strokeStyle = isInteracting ? 'rgba(141, 132, 156, 0.8)' : 'rgba(141, 132, 156, 0.45)';
-    ctx.lineWidth = isInteracting ? 2.2 : 1.8;
+    // --- 1. RENDERIZADO DE LÍNEAS ---
+    ctx.strokeStyle = isInteracting ? 'rgba(141, 132, 156, 0.8)' : 'rgba(141, 132, 156, 0.45)';
+    ctx.lineWidth = isInteracting ? 2.2 : 1.8;
 
-    linesToDraw.forEach((line) => {
-        line.dist -= (line.speed * (currentSpeed / 2.5));
+    linesToDraw.forEach((line) => {
+        line.dist -= (line.speed * (currentSpeed / 2.5));
 
-        // Reinicio progresivo al acercarse al centro
-        if (line.dist < 18) {
-            line.dist = 180 + Math.random() * 30;
-            line.angle = Math.random() * Math.PI * 2;
-        }
+        // Reinicio progresivo al acercarse al centro
+        if (line.dist < 18) {
+            line.dist = 180 + Math.random() * 30;
+            line.angle = Math.random() * Math.PI * 2;
+        }
 
-        const headX = cx + Math.cos(line.angle) * line.dist;
-        const headY = cy + Math.sin(line.angle) * line.dist;
-        const tailX = cx + Math.cos(line.angle) * (line.dist + 30);
-        const tailY = cy + Math.sin(line.angle) * (line.dist + 30);
+        const headX = cx + Math.cos(line.angle) * line.dist;
+        const headY = cy + Math.sin(line.angle) * line.dist;
+        const tailX = cx + Math.cos(line.angle) * (line.dist + 30);
+        const tailY = cy + Math.sin(line.angle) * (line.dist + 30);
 
-        ctx.beginPath();
-        ctx.moveTo(headX, headY);
-        ctx.lineTo(tailX, tailY);
-        ctx.stroke();
-    });
+        ctx.beginPath();
+        ctx.moveTo(headX, headY);
+        ctx.lineTo(tailX, tailY);
+        ctx.stroke();
+    });
 
-    // --- 2. MOVIMIENTO TIPO RESPIRACIÓN ---
-    // Usamos ondas senoidales suaves para simular la inhalación y exhalación
-    const breathSpeed = isInteracting ? 2.2 : 1.2;
-    const breathCycle = Math.sin(time * breathSpeed);
-   
-    // Escala del radio base e intensidad según la respiración
-    const breathDepth = isInteracting ? 8 : 5;
-    const baseRadius = 48 + (activeTouchesCount * 3);
-    const finalRadius = baseRadius + (breathCycle * breathDepth);
+    // --- 2. MOVIMIENTO TIPO RESPIRACIÓN ---
+    // Usamos ondas senoidales suaves para simular la inhalación y exhalación
+    const breathSpeed = isInteracting ? 2.2 : 1.2;
+    const breathCycle = Math.sin(time * breathSpeed);
+   
+    // Escala del radio base e intensidad según la respiración
+    const breathDepth = isInteracting ? 8 : 5;
+    const baseRadius = 48 + (activeTouchesCount * 3);
+    const finalRadius = baseRadius + (breathCycle * breathDepth);
 
-    ctx.fillStyle = '#6f667d';
-    drawSolidTriangle(ctx, cx, cy, finalRadius, 0);
+    ctx.fillStyle = '#6f667d';
+    drawSolidTriangle(ctx, cx, cy, finalRadius, 0);
 });
 
 // --- ANSIEDAD ---
-// 8 triángulos grandes
-let ansNodes = Array.from({length: 8}, (_, i) => ({
-    x: 120 + (i % 3) * 80 + Math.random() * 20, 
+// 9 triángulos grandes con gran amplitud de parpadeo (de muy claro a casi sólido)
+let ansNodes = Array.from({length: 9}, (_, i) => ({
+    x: 120 + (i % 3) * 80 + Math.random() * 20,
     y: 120 + Math.floor(i / 3) * 80 + Math.random() * 20,
-    vx: (Math.random() - 0.5) * 0.5, 
-    vy: (Math.random() - 0.5) * 0.5, 
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: (Math.random() - 0.5) * 0.5,
     angle: Math.random() * Math.PI * 2,
-    baseRadius: 22
+    baseRadius: 22,
+    flickerOffset: Math.random() * Math.PI * 2,
+    flickerSpeed: 0.8 + Math.random() * 0.6
 }));
 
 let ansState = {
@@ -1021,13 +1164,13 @@ const triggerAnsiedadInteraction = () => {
     // Reducción de tamaño instantánea
     ansState.targetSizeMult = 0.5;
 
-    // Cooldown de 1 segundo entre clics con aceleración hasta 10 clics
-    if (now - ansState.lastClickTime >= 1000) {
+    // Cooldown de 0.5 segundos (500 ms) entre clics
+    if (now - ansState.lastClickTime >= 500) {
         ansState.lastClickTime = now;
-        
-        if (ansState.clickCount < 10) {
+       
+        if (ansState.clickCount < 5) {
             ansState.clickCount++;
-            ansState.targetSpeedMult = 1.0 + (ansState.clickCount * 1.1);
+            ansState.targetSpeedMult = 1.0 + (ansState.clickCount * 2.2);
         }
     }
 
@@ -1048,11 +1191,14 @@ initCanvas('canvas-ansiedad', (ctx, size, mouse, time) => {
     const points = getActivePoints(mouse);
     const pointer = points.length > 0 ? points[0] : (mouse.inside ? { x: mouse.x, y: mouse.y } : null);
 
-    // Margen delimitador (más cerrado en reposo para no tocar bordes, más amplio en aceleración)
+    // Margen delimitador
     const padding = lerp(85, 35, (ansState.currentSpeedMult - 1) / 10);
 
+    // Nivel de interacción de 0 a 1 (alcanza el 100% al 5to clic)
+    const interactionRatio = ansState.clickCount / 5;
+
     ansNodes.forEach((p, i) => {
-        // 1. Repulsión entre los propios triángulos (evita que se amontonen)
+        // 1. Repulsión entre los propios triángulos
         for (let j = i + 1; j < ansNodes.length; j++) {
             const other = ansNodes[j];
             const dx = other.x - p.x;
@@ -1086,21 +1232,52 @@ initCanvas('canvas-ansiedad', (ctx, size, mouse, time) => {
         // 3. Movimiento caótico base
         p.vx += (Math.random() - 0.5) * 0.7 * ansState.currentSpeedMult;
         p.vy += (Math.random() - 0.5) * 0.7 * ansState.currentSpeedMult;
-        p.vx *= 0.92; 
+        p.vx *= 0.92;
         p.vy *= 0.92;
-        p.x += p.vx; 
+        p.x += p.vx;
         p.y += p.vy;
         p.angle += Math.hypot(p.vx, p.vy) * 0.02;
 
-        // 4. Paredes delimitadoras para alejarse de los bordes según la inactividad
+        // 4. Paredes delimitadoras
         if (p.x < padding) { p.x = padding; p.vx *= -0.8; }
         if (p.x > size - padding) { p.x = size - padding; p.vx *= -0.8; }
         if (p.y < padding) { p.y = padding; p.vy *= -0.8; }
         if (p.y > size - padding) { p.y = size - padding; p.vy *= -0.8; }
 
-        // Renderizado del triángulo
+        // 5. Parpadeo amplio: desciende a opacidad muy baja (0.08) y sube hasta alta opacidad (0.90)
+        const pulse = (Math.sin(time * p.flickerSpeed + p.flickerOffset) + 1) / 2;
+        const baseFillAlpha = lerp(0.0, 0.90, pulse);
+       
+        // Al interactuar (alcanzando el 5to clic), el relleno se vuelve totalmente sólido (0.98)
+        const fillAlpha = Math.min(0.98, lerp(baseFillAlpha, 0.98, interactionRatio));
+
+        // Geometría del triángulo
         const r = p.baseRadius * ansState.currentSizeMult;
-        ctx.fillStyle = '#7a718c';
-        drawSolidTriangle(ctx, p.x, p.y, r, p.angle);
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+
+        ctx.beginPath();
+        for (let k = 0; k < 3; k++) {
+            const a = (k * 2 * Math.PI) / 3;
+            const tx = Math.cos(a) * r;
+            const ty = Math.sin(a) * r;
+            if (k === 0) ctx.moveTo(tx, ty);
+            else ctx.lineTo(tx, ty);
+        }
+        ctx.closePath();
+
+        // Relleno oscilante entre casi transparente y muy oscuro
+        ctx.fillStyle = `rgba(141, 132, 156, ${fillAlpha})`;
+        ctx.fill();
+
+        // Líneas fijas
+        ctx.strokeStyle = 'rgba(141, 132, 156, 0.8)';
+        ctx.lineWidth = 1.8;
+        ctx.shadowColor = 'rgba(141, 132, 156, 0.4)';
+        ctx.shadowBlur = 4;
+        ctx.stroke();
+
+        ctx.restore();
     });
 }, null, triggerAnsiedadInteraction);
