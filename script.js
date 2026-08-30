@@ -110,7 +110,7 @@ if (btnFullscreenGrid) {
         if (document.body.classList.contains('fullscreen-grid-mode')) {
             btnFullscreenGrid.innerText = 'VER NORMAL';
         } else {
-            btnFullscreenGrid.innerText = 'MODO LÁMINA';
+            btnFullscreenGrid.innerText = 'VER TODOS';
         }
     });
 }
