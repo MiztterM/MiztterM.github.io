@@ -101,6 +101,20 @@ document.querySelectorAll('.btn-volver').forEach(btn => {
     });
 });
 
+// Lógica del botón de Modo Lámina
+const btnFullscreenGrid = document.getElementById('btn-fullscreen-grid');
+if (btnFullscreenGrid) {
+    btnFullscreenGrid.addEventListener('click', () => {
+        document.body.classList.toggle('fullscreen-grid-mode');
+        
+        if (document.body.classList.contains('fullscreen-grid-mode')) {
+            btnFullscreenGrid.innerText = 'VER NORMAL';
+        } else {
+            btnFullscreenGrid.innerText = 'MODO LÁMINA';
+        }
+    });
+}
+
 // ==============================================================
 // 3. MOTOR DE RENDERIZADO Y UTILIDADES
 // ==============================================================
@@ -462,53 +476,41 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
         const frame = Math.floor(time * 60) % 260;
 
         if (frame < 15) {
-            // Reposo inicial
             drawSettled = 1; drawProgress = 0;
         } else if (frame < 55) { 
-            // Nace la capa 2 (sincronizado con el 1er círculo de Memoria)
             drawSettled = 1; drawProgress = (frame - 15) / 40; 
         } else if (frame < 65) {
-            // Pausa
             drawSettled = 2; drawProgress = 0;
         } else if (frame < 105) { 
-            // Nace la capa 3 (sincronizado con el 2do círculo de Memoria)
             drawSettled = 2; drawProgress = (frame - 65) / 40; 
         } else if (frame < 115) {
-            // Pausa
             drawSettled = 3; drawProgress = 0;
         } else if (frame < 155) { 
-            // Nace la capa 4 (sincronizado con el 3er círculo de Memoria)
             drawSettled = 3; drawProgress = (frame - 115) / 40; 
         } else if (frame < 170) {
-            // Pausa antes del final
             drawSettled = 4; drawProgress = 0;
         } else if (frame < 250) { 
-            // Desvanecimiento de las capas 2, 3 y 4 (mientras Memoria se ilumina por completo)
             drawSettled = 4; drawProgress = 0;
             baseFadeOut = 1 - ((frame - 170) / 80); 
         } else {
-            // Reinicio limpio para volver al frame 0
             drawSettled = 1; drawProgress = 0;
         }
     } else {
-        // --- ESTADO INTERACTIVO (EN DETALLE): Control bidireccional intacto ---
-        const isInteracting = (mouse.touches.length >= 2) || mouse.isDown;
+        // --- ESTADO INTERACTIVO (EN DETALLE): Exclusivo para 2 dedos ---
+        // Verificamos estrictamente que haya 2 o más toques en pantalla
+        const isInteracting = mouse.touches.length >= 2;
 
         if (isInteracting) {
-            let currentDist = 0;
-            if (mouse.touches.length >= 2) {
-                const [a, b] = mouse.touches;
-                currentDist = Math.hypot(a.x - b.x, a.y - b.y);
-            } else {
-                currentDist = Math.hypot(mouse.targetX - size / 2, mouse.targetY - size / 2);
-            }
+            // Calculamos la distancia únicamente entre el dedo 1 y el dedo 2
+            const [a, b] = mouse.touches;
+            let currentDist = Math.hypot(a.x - b.x, a.y - b.y);
 
             if (herenciaBaseDist === null) {
                 herenciaBaseDist = currentDist;
             } else if (!herenciaGestureLocked) {
                 let dragAmount = currentDist - herenciaBaseDist;
                 
-                // 1. GESTO DE EXPANDIR (Agrandar)
+                // 1. GESTO DE EXPANDIR (Zoom In)
                 if (dragAmount > 0 && herenciaLayersCount < maxLayers) {
                     herenciaLayerProgress = Math.min(1, dragAmount / 45);
 
@@ -518,7 +520,7 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
                         herenciaGestureLocked = true; 
                     }
                 } 
-                // 2. GESTO DE ENCOGER (Achicar)
+                // 2. GESTO DE ENCOGER (Zoom Out)
                 else if (dragAmount < 0 && herenciaLayersCount > 1) {
                     herenciaLayerProgress = Math.max(-1, dragAmount / 45); 
 
@@ -694,6 +696,8 @@ let idRotSpeed = 0;
 let idDragPrevAngle = null;
 let idCenterSize = 18; 
 let currentSquareSizes = [32, 32, 32, 32, 32, 32, 32, 32];
+let idOuterBobAmp = 0;   // Amplitud actual del vaivén vertical de los cuadrados orbitantes
+let idCenterBobAmp = 0;  // Amplitud actual del vaivén vertical del cuadrado central
 
 initCanvas('canvas-identidad', (ctx, size, mouse, time) => {
     const cx = size / 2, cy = size / 2;
@@ -718,11 +722,19 @@ initCanvas('canvas-identidad', (ctx, size, mouse, time) => {
     const targetCenterSize = 18 + Math.min(idRotSpeed, 3) * 26;
     idCenterSize = lerp(idCenterSize, targetCenterSize, 0.1);
 
+    // Vaivén vertical orgánico y reducido: los orbitantes se mueven solo en reposo,
+    // el cuadrado central solo se mueve mientras el usuario interactúa
+    const OUTER_BOB_AMPLITUDE = 8;
+    const CENTER_BOB_AMPLITUDE = 8;
+    idOuterBobAmp = lerp(idOuterBobAmp, pointer ? 0 : OUTER_BOB_AMPLITUDE, 0.06);
+    idCenterBobAmp = lerp(idCenterBobAmp, pointer ? CENTER_BOB_AMPLITUDE : 0, 0.06);
+
     let nodes = [];
     for (let i = 0; i < 8; i++) {
         const angle = (i * Math.PI) / 4 + idRotation;
         const nx = cx + Math.cos(angle) * 100;
-        const ny = cy + Math.sin(angle) * 100;
+        const bobY = Math.sin(time * 0.9 + i * 0.85) * idOuterBobAmp; // fase distinta por nodo = orgánico
+        const ny = cy + Math.sin(angle) * 100 + bobY;
         let baseSize;
         if (i === 2 || i === 6) baseSize = 60;
         else if (i === 0 || i === 4) baseSize = 20;
@@ -748,14 +760,15 @@ initCanvas('canvas-identidad', (ctx, size, mouse, time) => {
     });
 
     // Cuadrado Central: empieza como línea, se rellena de color al interactuar
+    const centerY = cy + Math.sin(time * 0.9) * idCenterBobAmp;
     ctx.strokeStyle = '#7a9282';
     ctx.lineWidth = 3;
-    ctx.strokeRect(cx - idCenterSize / 2, cy - idCenterSize / 2, idCenterSize, idCenterSize);
+    ctx.strokeRect(cx - idCenterSize / 2, centerY - idCenterSize / 2, idCenterSize, idCenterSize);
 
     const fillIntensity = Math.min(idRotSpeed / 1.5, 1);
     if (fillIntensity > 0.01) {
         ctx.fillStyle = `rgba(122, 146, 130, ${fillIntensity})`;
-        ctx.fillRect(cx - idCenterSize / 2, cy - idCenterSize / 2, idCenterSize, idCenterSize);
+        ctx.fillRect(cx - idCenterSize / 2, centerY - idCenterSize / 2, idCenterSize, idCenterSize);
     }
 
     if (!pointer) {
@@ -765,44 +778,82 @@ initCanvas('canvas-identidad', (ctx, size, mouse, time) => {
 });
 
 // --- EMPATÍA ---
-let empFillLevel = 0; // Para que el color aparezca y desaparezca suavemente
+let empFillLevel = 0.08; // Para que el color aparezca y desaparezca suavemente
+let empSmallPos = null;  // Posición actual del cuadrado pequeño (orbitando o arrastrado)
+let empIsDragging = false;
 
 initCanvas('canvas-empatia', (ctx, size, mouse, time) => {
-    let p1 = { x: 150, y: 200 + Math.sin(time)*15 }; // Elemento central/fijo
-    let p2 = mouse.inside ? { x: mouse.x, y: mouse.y } : { x: 260, y: 200 + Math.cos(time)*15 }; // Elemento móvil
-    
-    let d = Math.sqrt((p2.x-p1.x)**2 + (p2.y-p1.y)**2); 
+    // CUADRADO GRANDE (P1): centrado horizontalmente, con movimiento de órbita arriba/abajo (base del código anterior)
+    let p1 = { x: size / 2, y: size / 2 + Math.sin(time) * 15 };
+
+    // Solo hay "pointer" si hay click sostenido o un touch activo
+    const points = getActivePoints(mouse);
+    const pointer = points.length > 0 ? points[0] : null;
+
+    // Distancia/cercanía calculada con la posición del frame anterior (lag de 1 frame, imperceptible)
+    let d = empSmallPos ? Math.hypot(empSmallPos.x - p1.x, empSmallPos.y - p1.y) : 999;
     let closeness = Math.max(0, 1 - d / 150); // 0 = lejos, 1 = súper cerca
-    
-    // Línea de conexión
-    ctx.fillStyle = `rgba(132, 156, 139, ${0.25 + closeness * 0.2})`; 
-    ctx.save(); ctx.translate(p1.x, p1.y); ctx.rotate(Math.atan2(p2.y - p1.y, p2.x - p1.x)); ctx.fillRect(0, -2, d, 4); ctx.restore();
-    
-    let sizeP1 = 35 + closeness * 10; 
-    let sizeP2 = 16 + closeness * 4;
+
+    let sizeP1 = 42 + closeness * 10; // Cuadrado grande
+    let sizeP2 = 22 + closeness * 5;  // Cuadrado chico, siempre menor al grande
+
+    // --- MOVIMIENTO DEL CUADRADO PEQUEÑO ---
+    if (pointer) {
+        // Si todavía no estamos arrastrando, revisamos si el click/touch cayó sobre el cuadrado chico
+        if (!empIsDragging && empSmallPos) {
+            const distToSmall = Math.hypot(pointer.x - empSmallPos.x, pointer.y - empSmallPos.y);
+            if (distToSmall < sizeP2 + 14) empIsDragging = true;
+        }
+        if (empIsDragging) {
+            empSmallPos = { x: pointer.x, y: pointer.y };
+        }
+    } else {
+        empIsDragging = false;
+    }
+
+    if (!empIsDragging) {
+        // Órbita constante y orgánica, alejada del cuadrado grande para que no se toquen en el estado default
+        const orbitRadius = 135 + Math.sin(time * 0.37) * 15;
+        const orbitAngle = time * 0.5 + Math.sin(time * 0.17) * 0.5;
+        empSmallPos = {
+            x: p1.x + Math.cos(orbitAngle) * orbitRadius,
+            y: p1.y + Math.sin(orbitAngle) * orbitRadius
+        };
+    }
+
+    let p2 = empSmallPos;
+
+    // Línea de conexión: solo se dibuja mientras se sostiene el cuadrado pequeño
+    if (empIsDragging) {
+        const dLine = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        ctx.fillStyle = `rgba(132, 156, 139, ${0.25 + closeness * 0.2})`;
+        ctx.save();
+        ctx.translate(p1.x, p1.y);
+        ctx.rotate(Math.atan2(p2.y - p1.y, p2.x - p1.x));
+        ctx.fillRect(0, -2, dLine, 4);
+        ctx.restore();
+    }
 
     // CUADRADO GRANDE (P1): Siempre relleno, se intensifica al acercarse
     ctx.fillStyle = `rgba(132, 156, 139, ${0.6 + closeness * 0.4})`;
     ctx.fillRect(p1.x - sizeP1, p1.y - sizeP1, sizeP1 * 2, sizeP1 * 2);
-    
-    // CUADRADO CHICO (P2): Base dibujada solo con líneas
+
+    // CUADRADO CHICO (P2): marco fijo (igual al del código viejo), su opacidad nunca cambia
     ctx.strokeStyle = '#a6bda9';
     ctx.lineWidth = 3;
     ctx.strokeRect(p2.x - sizeP2, p2.y - sizeP2, sizeP2 * 2, sizeP2 * 2);
 
     // LÓGICA DE CONTACTO: Verificamos si los dos cuadrados se están superponiendo (colisión)
-    let isTouching = Math.abs(p1.x - p2.x) < (sizeP1 + sizeP2) && 
+    let isTouching = Math.abs(p1.x - p2.x) < (sizeP1 + sizeP2) &&
                      Math.abs(p1.y - p2.y) < (sizeP1 + sizeP2);
 
-    // Si se tocan, el objetivo es rellenar al 90% de opacidad, sino queda en 0 (vacío)
-    let targetFill = isTouching ? 0.9 : 0;
+    // Si se tocan, el objetivo es rellenar al 90% de opacidad, sino queda en el mínimo
+    let targetFill = isTouching ? 0.9 : 0.08;
     empFillLevel = lerp(empFillLevel, targetFill, 0.15); // Transición suave para que no parpadee de golpe
 
-    // Rellenamos el cuadrado chico solo si hay nivel de relleno
-    if (empFillLevel > 0.01) {
-        ctx.fillStyle = `rgba(166, 189, 169, ${empFillLevel})`;
-        ctx.fillRect(p2.x - sizeP2, p2.y - sizeP2, sizeP2 * 2, sizeP2 * 2);
-    }
+    // CUADRADO CHICO (P2): relleno interior con opacidad variable (el marco de arriba no cambia)
+    ctx.fillStyle = `rgba(166, 189, 169, ${empFillLevel})`;
+    ctx.fillRect(p2.x - sizeP2, p2.y - sizeP2, sizeP2 * 2, sizeP2 * 2);
 });
 
 // --- COLABORACIÓN ---
@@ -818,16 +869,31 @@ let cNodes = Array.from({length: 16}, (_, i) => {
 });
 
 initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
+    // Puntos de interacción activos: múltiples dedos si hay touch real, o el mouse en hover (sin click) en PC
+    let points = [];
+    if (mouse.touches.length > 0) {
+        points = mouse.touches;
+    } else if (mouse.inside) {
+        points = [{ x: mouse.x, y: mouse.y }];
+    }
+
     // 1. Movimiento de los nodos y reseteo del peso
     cNodes.forEach((p, i) => {
         let autoX = p.ox + Math.sin(time + i) * 8; 
         let autoY = p.oy + Math.cos(time + i) * 8;
         
-        if (mouse.inside) {
-            let d = Math.sqrt((mouse.x - p.x)**2 + (mouse.y - p.y)**2);
-            if(d < 80) { 
-                p.x = lerp(p.x, mouse.x, 0.07); 
-                p.y = lerp(p.y, mouse.y, 0.07); 
+        if (points.length > 0) {
+            // Cada nodo se atrae hacia el punto de interacción más cercano a él
+            let nearest = null;
+            let nearestDist = Infinity;
+            points.forEach(pt => {
+                let d = Math.hypot(pt.x - p.x, pt.y - p.y);
+                if (d < nearestDist) { nearestDist = d; nearest = pt; }
+            });
+
+            if (nearest && nearestDist < 80) { 
+                p.x = lerp(p.x, nearest.x, 0.07); 
+                p.y = lerp(p.y, nearest.y, 0.07); 
             } else { 
                 p.x = lerp(p.x, autoX, 0.1); 
                 p.y = lerp(p.y, autoY, 0.1); 
@@ -898,7 +964,7 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
 
 // --- INCERTIDUMBRE ---
 let clones = [];
-const UNCERT_COUNT = 19;
+const UNCERT_COUNT = 18; // 9 antihorario (left) + 9 horario (right, sin tocar su lógica)
 const UNCERT_SMALL_R = 18;   
 const UNCERT_TAP_R = 34;     
 const UNCERT_ARM_DIST = 45;  
@@ -907,6 +973,11 @@ let uncertState = 'fragmented';
 let uncertResetTimer = 0;
 let uncertLastPointer = null;   
 const UNCERT_DRAG_THRESHOLD = 2.5; 
+
+// --- NUEVO: sistema de líneas-vectores (se arma al clickear los 9 triángulos antihorarios) ---
+let uncertLeftClickCount = 0;      // cuántos triángulos antihorarios (izquierda) fueron clickeados (0 a 9)
+let uncertLineOpacityCurrent = 0;  // opacidad suavizada del borde de las líneas
+let uncertFillOpacityCurrent = 0;  // opacidad suavizada del relleno del triángulo grande
 const UNCERT_FLEE_RADIUS = 75;     // Ajustado para que el área de repulsión acompañe al nuevo radio
 const UNCERT_FLEE_STRENGTH = 2.4;  
 
@@ -1004,33 +1075,9 @@ initCanvas('canvas-incertidumbre', (ctx, size, mouse, time) => {
                 c.collected = true;
                 c.travel = 0;
                 if (c.group === 'left') {
-                    const v = triangleVertices(c.x, c.y, UNCERT_SMALL_R, c.selfRot);
-                    c.edges = [
-                        { sx: v[0].x, sy: v[0].y, ex: v[1].x, ey: v[1].y },
-                        { sx: v[1].x, sy: v[1].y, ex: v[2].x, ey: v[2].y },
-                        { sx: v[2].x, sy: v[2].y, ex: v[0].x, ey: v[0].y }
-                    ];
+                    // Cada triángulo antihorario clickeado suma al progreso del triángulo grande y sus líneas-vector
+                    uncertLeftClickCount = Math.min(9, uncertLeftClickCount + 1);
                 }
-            }
-        } else if (c.group === 'left') {
-            c.travel = Math.min(1, c.travel + 0.035);
-            const lineOpacity = c.travel < 0.85 ? 0.6 : lerp(0.6, 0, (c.travel - 0.85) / 0.15);
-
-            if (c.edges && lineOpacity > 0.01) {
-                ctx.strokeStyle = `rgba(141, 132, 156, ${lineOpacity})`;
-                ctx.lineWidth = 2;
-                c.edges.forEach((e, i) => {
-                    const targetStart = bigVerts[i];
-                    const targetEnd = bigVerts[(i + 1) % 3];
-                    e.sx = lerp(e.sx, targetStart.x, 0.1);
-                    e.sy = lerp(e.sy, targetStart.y, 0.1);
-                    e.ex = lerp(e.ex, targetEnd.x, 0.1);
-                    e.ey = lerp(e.ey, targetEnd.y, 0.1);
-                    ctx.beginPath();
-                    ctx.moveTo(e.sx, e.sy);
-                    ctx.lineTo(e.ex, e.ey);
-                    ctx.stroke();
-                });
             }
         } else {
             c.opacity = lerp(c.opacity, 0, 0.15);
@@ -1050,37 +1097,63 @@ initCanvas('canvas-incertidumbre', (ctx, size, mouse, time) => {
         }
     });
 
-    const leftClones = clones.filter(c => c.group === 'left');
-    const leftCollected = leftClones.filter(c => c.collected).length;
-    const frac = leftCollected / leftClones.length;
-
-    let morphPhase = 0;
     if (allCollected) {
         uncertState = 'reforming';
         uncertResetTimer++;
-        morphPhase = Math.max(0, Math.min(1, (uncertResetTimer - 20) / 20));
     } else {
         uncertState = 'fragmented';
         uncertResetTimer = 0;
     }
 
-    const outlineOpacity = frac * 0.9 * (1 - morphPhase);
-    if (outlineOpacity > 0.01) {
-        ctx.strokeStyle = `rgba(141, 132, 156, ${outlineOpacity})`;
-        ctx.lineWidth = 3;
-        drawTriangleOutline(ctx, size / 2, size / 2, 55, centerPos.rot);
+    // --- TABLA DE OPACIDADES POR CANTIDAD DE TRIÁNGULOS ANTIHORARIOS CLICKEADOS (0 a 9) ---
+    // Clicks 1, 2 y 3: van apareciendo las líneas 1, 2 y 3 (una por click), borde fijo en 10%
+    // Clicks 4, 5, 6: el borde (las líneas) sube a 20%, 40%, 60%
+    // Clicks 7, 8, 9: el borde sigue subiendo (80%, 100%) y AHORA también sube el relleno del
+    //                 triángulo grande (30%, 60%, 100%)
+    const UNCERT_BORDER_OPACITY_STEPS = [0, 0.10, 0.10, 0.10, 0.20, 0.40, 0.60, 0.80, 1.00, 1.00];
+    const UNCERT_FILL_OPACITY_STEPS   = [0, 0,    0,    0,    0,    0,    0,    0.30, 0.60, 1.00];
+
+    // --- CAPA 1: TRIÁNGULO GRANDE (SIN BORDE PROPIO — el borde lo generan las líneas) ---
+    // Usa la misma paleta de color que los triángulos chicos que orbitan (violeta/gris), sin verde.
+    const uncertFillTarget = UNCERT_FILL_OPACITY_STEPS[uncertLeftClickCount];
+    uncertFillOpacityCurrent = lerp(uncertFillOpacityCurrent, uncertFillTarget, 0.08);
+    if (uncertFillOpacityCurrent > 0.01) {
+        ctx.fillStyle = `rgba(141, 132, 156, ${uncertFillOpacityCurrent})`;
+        drawSolidTriangle(ctx, size / 2, size / 2, 55, centerPos.rot);
     }
 
-    centerPos.opacity = 0.85 * morphPhase;
-    if (centerPos.opacity > 0.01) {
-        ctx.fillStyle = `rgba(141, 132, 156, ${centerPos.opacity})`;
-        drawSolidTriangle(ctx, size / 2, size / 2, 55, centerPos.rot);
+    // --- CAPA 2: LAS 3 LÍNEAS-VECTOR, dibujadas arriba del triángulo grande ---
+    // 1er click antihorario -> aparece la línea 1 (un lado del triángulo grande)
+    // 2do click antihorario -> aparece la línea 2 (el siguiente lado, conectando con el extremo anterior)
+    // 3er click antihorario -> aparece la línea 3, cerrando el recorrido y coincidiendo con el punto de partida
+    // Al usar directamente los vértices del triángulo grande (bigVerts) cada frame, las líneas
+    // siempre coinciden exactamente con sus extremos y rotan junto con él.
+    const uncertLinesToShow = Math.min(3, uncertLeftClickCount);
+    const uncertLineOpacityTarget = UNCERT_BORDER_OPACITY_STEPS[uncertLeftClickCount];
+    uncertLineOpacityCurrent = lerp(uncertLineOpacityCurrent, uncertLineOpacityTarget, 0.08);
+
+    if (uncertLinesToShow > 0 && uncertLineOpacityCurrent > 0.005) {
+        // Mismo color de borde que los triángulos chicos que orbitan, y mismo grosor (2px)
+        ctx.strokeStyle = `rgba(141, 132, 156, ${uncertLineOpacityCurrent})`;
+        ctx.lineWidth = 2;
+        for (let i = 0; i < uncertLinesToShow; i++) {
+            const start = bigVerts[i];
+            const end = bigVerts[(i + 1) % 3];
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end.x, end.y);
+            ctx.stroke();
+        }
     }
 
     if (uncertState === 'reforming' && uncertResetTimer > 45) {
         makeUncertClones(size); 
         uncertResetTimer = 0;
         centerPos.opacity = 0;
+        // Reiniciamos también toda la lógica de las líneas-vector
+        uncertLeftClickCount = 0;
+        uncertLineOpacityCurrent = 0;
+        uncertFillOpacityCurrent = 0;
     }
 });
 
