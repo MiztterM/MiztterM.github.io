@@ -863,13 +863,10 @@ let cNodes = Array.from({length: 16}, (_, i) => {
         x: 100 + (i % 4) * 65, y: 100 + Math.floor(i / 4) * 65,
         ox: 100 + (i % 4) * 65, oy: 100 + Math.floor(i / 4) * 65,
         fillLevel: isCore ? 0.4 : 0,   
-        currentSize: isCore ? 18 : 12, // TAMAÑOS BASE MÁS GRANDES (antes 14 y 10)
-        isCore: isCore,
-        group: (i % 4 < 2) ? 0 : 1 
+        currentSize: isCore ? 14 : 10, 
+        isCore: isCore
     };
 });
-
-let colabMerged = false; // Variable para saber si los dos bloques ya se unieron magnéticamente
 
 initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
     // Puntos de interacción activos
@@ -880,47 +877,44 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         points = [{ x: mouse.x, y: mouse.y }];
     }
 
-    // LÓGICA DE FUSIÓN PARA DEDOS ANCHOS
-    if (points.length === 0) {
-        colabMerged = false; // Se rompe la unión al soltar la pantalla
-    } else if (points.length >= 2) {
-        let distFingers = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
-        // Si los dedos se acercan a 120px, fusionamos los bloques antes de que choquen los dedos
-        if (distFingers < 120) {
-            colabMerged = true;
-        }
-    }
+    // 1. Lógica de "Cupos" por dedo (Límite de 6 nodos por cada punto de contacto)
+    let targets = points.map(pt => ({ x: pt.x, y: pt.y, count: 0, max: 6 }));
+    let nodeTargets = new Array(cNodes.length).fill(null);
+    let pairings = [];
 
-    // 1. Movimiento de los nodos y reseteo del peso
+    // Calculamos la distancia de cada nodo a cada dedo en pantalla
+    cNodes.forEach((node, nIdx) => {
+        targets.forEach((target, tIdx) => {
+            let dist = Math.hypot(target.x - node.x, target.y - node.y);
+            if (dist < 180) { // Radio amplio para que los atrape
+                pairings.push({ nIdx, tIdx, dist });
+            }
+        });
+    });
+
+    // Ordenamos las distancias de menor a mayor (para agarrar siempre los más cercanos primero)
+    pairings.sort((a, b) => a.dist - b.dist);
+
+    // Asignamos el objetivo si el nodo está libre y el dedo aún no llenó su cupo de 6
+    pairings.forEach(pair => {
+        if (!nodeTargets[pair.nIdx] && targets[pair.tIdx].count < targets[pair.tIdx].max) {
+            nodeTargets[pair.nIdx] = targets[pair.tIdx];
+            targets[pair.tIdx].count++; // Suma 1 al cupo de ese dedo
+        }
+    });
+
+    // 2. Movimiento de los nodos y reseteo del peso
     cNodes.forEach((p, i) => {
         let autoX = p.ox + Math.sin(time + i) * 8; 
         let autoY = p.oy + Math.cos(time + i) * 8;
         
-        let target = null;
-        
-        // Si ya se fusionaron, TODOS siguen a un solo dedo (el primero que siga tocando la pantalla)
-        if (colabMerged && points.length > 0) {
-            target = points[0];
-        } 
-        else if (points.length === 1) {
-            let activeGroup = points[0].x < size / 2 ? 0 : 1;
-            if (p.group === activeGroup) target = points[0];
-        } else if (points.length >= 2) {
-            let leftPoint = points[0].x < points[1].x ? points[0] : points[1];
-            let rightPoint = points[0].x < points[1].x ? points[1] : points[0];
-            target = p.group === 0 ? leftPoint : rightPoint;
-        }
+        let target = nodeTargets[i]; // El objetivo asignado a este nodo
 
-        if (target) {
-            let d = Math.hypot(target.x - p.x, target.y - p.y);
-            if (d < 220) { 
-                p.x = lerp(p.x, target.x, 0.08); 
-                p.y = lerp(p.y, target.y, 0.08); 
-            } else { 
-                p.x = lerp(p.x, autoX, 0.1); 
-                p.y = lerp(p.y, autoY, 0.1); 
-            }
+        if (target) { 
+            p.x = lerp(p.x, target.x, 0.08); 
+            p.y = lerp(p.y, target.y, 0.08); 
         } else { 
+            // Si no tiene target (porque el/los dedos ya se llenaron), vuelve a flotar a su base
             p.x = lerp(p.x, autoX, 0.1); 
             p.y = lerp(p.y, autoY, 0.1); 
         }
@@ -928,23 +922,22 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         p.weight = 0; 
     });
 
-    // 2. Dibujamos líneas y calculamos la fuerza de las conexiones
+    // 3. Dibujamos líneas y calculamos la fuerza de las conexiones
     ctx.fillStyle = 'rgba(132, 156, 139, 0.2)';
-    for(let i = 0; i < cNodes.length; i++) {
-        for(let j = i + 1; j < cNodes.length; j++) {
+    for(let i=0; i<cNodes.length; i++) {
+        for(let j=i+1; j<cNodes.length; j++) {
             let dx = cNodes[j].x - cNodes[i].x; 
             let dy = cNodes[j].y - cNodes[i].y;
-            let d = Math.sqrt(dx * dx + dy * dy);
+            let d = Math.sqrt(dx*dx + dy*dy);
             
-            // Aumentamos levemente la distancia de conexión a 90 para compensar cuadrados más grandes
-            if(d < 90) {
+            if(d < 80) {
                 ctx.save(); 
                 ctx.translate(cNodes[i].x, cNodes[i].y); 
                 ctx.rotate(Math.atan2(dy, dx));
                 ctx.fillRect(0, -1.5, d, 3); 
                 ctx.restore();
 
-                let baseStrength = 1 - (d / 90);
+                let baseStrength = 1 - (d / 80);
                 let multiplier = (cNodes[i].isCore || cNodes[j].isCore) ? 3.0 : 1.0;
                 let finalStrength = baseStrength * multiplier;
 
@@ -954,17 +947,18 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         }
     }
 
-    // 3. Dibujamos los cuadrados aplicando el crecimiento y relleno
+    // 4. Dibujamos los cuadrados aplicando el crecimiento y relleno
     cNodes.forEach(p => { 
-        let targetBonus = Math.min(1, p.weight / 24.0); 
+        // Subimos el límite a 18.0 para que necesites unir los grupos (dedos) para llegar al 100% visual
+        let targetBonus = Math.min(1, p.weight / 18.0); 
         
         let baseFill = p.isCore ? 0.4 : 0;
-        let baseSize = p.isCore ? 18 : 12; // Tamaños iniciales aumentados
+        let baseSize = p.isCore ? 14 : 10;
         
         let finalFill = baseFill + targetBonus * (1 - baseFill);
         
-        // MULTIPLICADOR DE CRECIMIENTO MAYOR: se expanden el doble al unirse (antes 1.5)
-        let finalSize = baseSize + (targetBonus * baseSize * 2.0); 
+        // CRECIMIENTO
+        let finalSize = baseSize + (targetBonus * baseSize * 1.5); 
         
         p.fillLevel = lerp(p.fillLevel, finalFill, 0.15);
         p.currentSize = lerp(p.currentSize, finalSize, 0.15);
