@@ -868,6 +868,10 @@ let cNodes = Array.from({length: 16}, (_, i) => {
     };
 });
 
+// Variables para la "Memoria Magnética"
+let collabCapacity = 6; 
+let collabMaxConnections = 0;
+
 initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
     // Puntos de interacción activos
     let points = [];
@@ -877,52 +881,60 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         points = [{ x: mouse.x, y: mouse.y }];
     }
 
-    // 1. AGRUPACIÓN MAGNÉTICA DE DEDOS CERCANOS
-    // Promediamos la ubicación de los dedos cercanos y sumamos sus cupos
-    let clusters = [];
-    points.forEach(pt => {
-        let merged = false;
-        for (let c of clusters) {
-            // Si dos dedos se acercan a menos de 130px, se fusionan sus áreas de atracción
-            if (Math.hypot(pt.x - c.x, pt.y - c.y) < 130) {
-                c.x = (c.x * c.fingers + pt.x) / (c.fingers + 1);
-                c.y = (c.y * c.fingers + pt.y) / (c.fingers + 1);
-                c.fingers++;
-                c.max += 6; // Suma el cupo del nuevo dedo (6 -> 12 -> 18)
-                merged = true;
-                break;
+    // --- LÓGICA DE FUSIÓN PERSISTENTE ---
+    // Si levantamos todos los dedos, se resetea todo al estado base
+    if (points.length === 0) {
+        collabCapacity = 6;
+        collabMaxConnections = 0;
+    } else {
+        // Contamos cuántas conexiones (cruces de dedos) hay activas ahora mismo
+        let currentConnections = 0;
+        for (let i = 0; i < points.length; i++) {
+            for (let j = i + 1; j < points.length; j++) {
+                if (Math.hypot(points[i].x - points[j].x, points[i].y - points[j].y) < 140) {
+                    currentConnections++;
+                }
             }
         }
-        if (!merged) {
-            clusters.push({ x: pt.x, y: pt.y, fingers: 1, max: 6, assigned: 0 });
-        }
-    });
 
+        // Si hay nuevas conexiones (juntamos dedos), aumentamos la capacidad máxima global (hasta 18)
+        if (currentConnections > collabMaxConnections) {
+            let newMerges = currentConnections - collabMaxConnections;
+            collabCapacity = Math.min(18, collabCapacity + (newMerges * 6));
+            collabMaxConnections = currentConnections;
+        } 
+        // Si soltamos un dedo, actualizamos el tope, pero NO perdemos la capacidad ganada
+        else if (currentConnections < collabMaxConnections) {
+            collabMaxConnections = currentConnections; 
+        }
+    }
+
+    // 1. Asignación de cupos (cada dedo tiene la capacidad máxima ganada hasta el momento)
+    let targets = points.map(pt => ({ x: pt.x, y: pt.y, count: 0, max: collabCapacity }));
     let nodeTargets = new Array(cNodes.length).fill(null);
     let pairings = [];
 
-    // 2. Medimos la distancia de los nodos a estos "centros de gravedad"
+    // Medimos las distancias
     cNodes.forEach((node, nIdx) => {
-        clusters.forEach((cluster, cIdx) => {
-            let dist = Math.hypot(cluster.x - node.x, cluster.y - node.y);
-            if (dist < 220) { 
-                pairings.push({ nIdx, cIdx, dist });
+        targets.forEach((target, tIdx) => {
+            let dist = Math.hypot(target.x - node.x, target.y - node.y);
+            if (dist < 220) { // Radio de atracción para que reaccionen de lejos
+                pairings.push({ nIdx, tIdx, dist });
             }
         });
     });
 
-    // Ordenamos para que los nodos siempre vayan al cluster más cercano disponible
+    // Ordenamos de menor a mayor distancia para atrapar primero a los más cercanos
     pairings.sort((a, b) => a.dist - b.dist);
 
     pairings.forEach(pair => {
-        let cluster = clusters[pair.cIdx];
-        if (!nodeTargets[pair.nIdx] && cluster.assigned < cluster.max) {
-            nodeTargets[pair.nIdx] = cluster;
-            cluster.assigned++;
+        if (!nodeTargets[pair.nIdx] && targets[pair.tIdx].count < targets[pair.tIdx].max) {
+            nodeTargets[pair.nIdx] = targets[pair.tIdx];
+            targets[pair.tIdx].count++;
         }
     });
 
-    // 3. Movimiento de los nodos hacia su target asignado
+    // 2. Movimiento de los nodos hacia su objetivo
     cNodes.forEach((p, i) => {
         let autoX = p.ox + Math.sin(time + i) * 8; 
         let autoY = p.oy + Math.cos(time + i) * 8;
@@ -933,6 +945,7 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
             p.x = lerp(p.x, target.x, 0.08); 
             p.y = lerp(p.y, target.y, 0.08); 
         } else { 
+            // Si el nodo quedó libre (cupos llenos), vuelve a flotar en su lugar
             p.x = lerp(p.x, autoX, 0.1); 
             p.y = lerp(p.y, autoY, 0.1); 
         }
@@ -940,7 +953,7 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         p.weight = 0; 
     });
 
-    // 4. Dibujamos líneas y calculamos la fuerza de las conexiones
+    // 3. Dibujamos líneas y calculamos la fuerza de las conexiones
     ctx.fillStyle = 'rgba(132, 156, 139, 0.2)';
     for(let i=0; i<cNodes.length; i++) {
         for(let j=i+1; j<cNodes.length; j++) {
@@ -965,8 +978,9 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         }
     }
 
-    // 5. Dibujamos los cuadrados aplicando el crecimiento y relleno
+    // 4. Dibujamos los cuadrados aplicando el crecimiento y relleno
     cNodes.forEach(p => { 
+        // Dividimos por 18.0 para exigir máxima colaboración antes de cerrarse
         let targetBonus = Math.min(1, p.weight / 18.0); 
         
         let baseFill = p.isCore ? 0.4 : 0;
@@ -974,6 +988,7 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         
         let finalFill = baseFill + targetBonus * (1 - baseFill);
         
+        // Crecimiento al unirse
         let finalSize = baseSize + (targetBonus * baseSize * 1.5); 
         
         p.fillLevel = lerp(p.fillLevel, finalFill, 0.15);
