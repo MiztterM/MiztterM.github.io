@@ -877,44 +877,62 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         points = [{ x: mouse.x, y: mouse.y }];
     }
 
-    // 1. Lógica de "Cupos" por dedo (Límite de 6 nodos por cada punto de contacto)
-    let targets = points.map(pt => ({ x: pt.x, y: pt.y, count: 0, max: 6 }));
+    // 1. AGRUPACIÓN MAGNÉTICA DE DEDOS CERCANOS
+    // Promediamos la ubicación de los dedos cercanos y sumamos sus cupos
+    let clusters = [];
+    points.forEach(pt => {
+        let merged = false;
+        for (let c of clusters) {
+            // Si dos dedos se acercan a menos de 130px, se fusionan sus áreas de atracción
+            if (Math.hypot(pt.x - c.x, pt.y - c.y) < 130) {
+                c.x = (c.x * c.fingers + pt.x) / (c.fingers + 1);
+                c.y = (c.y * c.fingers + pt.y) / (c.fingers + 1);
+                c.fingers++;
+                c.max += 6; // Suma el cupo del nuevo dedo (6 -> 12 -> 18)
+                merged = true;
+                break;
+            }
+        }
+        if (!merged) {
+            clusters.push({ x: pt.x, y: pt.y, fingers: 1, max: 6, assigned: 0 });
+        }
+    });
+
     let nodeTargets = new Array(cNodes.length).fill(null);
     let pairings = [];
 
-    // Calculamos la distancia de cada nodo a cada dedo en pantalla
+    // 2. Medimos la distancia de los nodos a estos "centros de gravedad"
     cNodes.forEach((node, nIdx) => {
-        targets.forEach((target, tIdx) => {
-            let dist = Math.hypot(target.x - node.x, target.y - node.y);
-            if (dist < 180) { // Radio amplio para que los atrape
-                pairings.push({ nIdx, tIdx, dist });
+        clusters.forEach((cluster, cIdx) => {
+            let dist = Math.hypot(cluster.x - node.x, cluster.y - node.y);
+            if (dist < 220) { 
+                pairings.push({ nIdx, cIdx, dist });
             }
         });
     });
 
-    // Ordenamos las distancias de menor a mayor (para agarrar siempre los más cercanos primero)
+    // Ordenamos para que los nodos siempre vayan al cluster más cercano disponible
     pairings.sort((a, b) => a.dist - b.dist);
 
-    // Asignamos el objetivo si el nodo está libre y el dedo aún no llenó su cupo de 6
     pairings.forEach(pair => {
-        if (!nodeTargets[pair.nIdx] && targets[pair.tIdx].count < targets[pair.tIdx].max) {
-            nodeTargets[pair.nIdx] = targets[pair.tIdx];
-            targets[pair.tIdx].count++; // Suma 1 al cupo de ese dedo
+        let cluster = clusters[pair.cIdx];
+        if (!nodeTargets[pair.nIdx] && cluster.assigned < cluster.max) {
+            nodeTargets[pair.nIdx] = cluster;
+            cluster.assigned++;
         }
     });
 
-    // 2. Movimiento de los nodos y reseteo del peso
+    // 3. Movimiento de los nodos hacia su target asignado
     cNodes.forEach((p, i) => {
         let autoX = p.ox + Math.sin(time + i) * 8; 
         let autoY = p.oy + Math.cos(time + i) * 8;
         
-        let target = nodeTargets[i]; // El objetivo asignado a este nodo
+        let target = nodeTargets[i];
 
         if (target) { 
             p.x = lerp(p.x, target.x, 0.08); 
             p.y = lerp(p.y, target.y, 0.08); 
         } else { 
-            // Si no tiene target (porque el/los dedos ya se llenaron), vuelve a flotar a su base
             p.x = lerp(p.x, autoX, 0.1); 
             p.y = lerp(p.y, autoY, 0.1); 
         }
@@ -922,7 +940,7 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         p.weight = 0; 
     });
 
-    // 3. Dibujamos líneas y calculamos la fuerza de las conexiones
+    // 4. Dibujamos líneas y calculamos la fuerza de las conexiones
     ctx.fillStyle = 'rgba(132, 156, 139, 0.2)';
     for(let i=0; i<cNodes.length; i++) {
         for(let j=i+1; j<cNodes.length; j++) {
@@ -947,9 +965,8 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         }
     }
 
-    // 4. Dibujamos los cuadrados aplicando el crecimiento y relleno
+    // 5. Dibujamos los cuadrados aplicando el crecimiento y relleno
     cNodes.forEach(p => { 
-        // Subimos el límite a 18.0 para que necesites unir los grupos (dedos) para llegar al 100% visual
         let targetBonus = Math.min(1, p.weight / 18.0); 
         
         let baseFill = p.isCore ? 0.4 : 0;
@@ -957,7 +974,6 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         
         let finalFill = baseFill + targetBonus * (1 - baseFill);
         
-        // CRECIMIENTO
         let finalSize = baseSize + (targetBonus * baseSize * 1.5); 
         
         p.fillLevel = lerp(p.fillLevel, finalFill, 0.15);
