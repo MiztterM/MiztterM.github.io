@@ -864,12 +864,15 @@ let cNodes = Array.from({length: 16}, (_, i) => {
         ox: 100 + (i % 4) * 65, oy: 100 + Math.floor(i / 4) * 65,
         fillLevel: isCore ? 0.4 : 0,   
         currentSize: isCore ? 14 : 10, 
-        isCore: isCore
+        isCore: isCore,
+        // (i % 4) nos da la columna (0, 1, 2, 3).
+        // Si es menor a 2 (columnas 0 y 1), es el Grupo 0 (Izquierda). Sino, Grupo 1 (Derecha).
+        group: (i % 4 < 2) ? 0 : 1 
     };
 });
 
 initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
-    // Puntos de interacción activos: múltiples dedos si hay touch real, o el mouse en hover (sin click) en PC
+    // Puntos de interacción activos
     let points = [];
     if (mouse.touches.length > 0) {
         points = mouse.touches;
@@ -882,23 +885,32 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
         let autoX = p.ox + Math.sin(time + i) * 8; 
         let autoY = p.oy + Math.cos(time + i) * 8;
         
-        if (points.length > 0) {
-            // Cada nodo se atrae hacia el punto de interacción más cercano a él
-            let nearest = null;
-            let nearestDist = Infinity;
-            points.forEach(pt => {
-                let d = Math.hypot(pt.x - p.x, pt.y - p.y);
-                if (d < nearestDist) { nearestDist = d; nearest = pt; }
-            });
+        let target = null;
+        if (points.length === 1) {
+            // Si hay un solo punto, miramos de qué lado de la pantalla está (mitad = size/2)
+            let activeGroup = points[0].x < size / 2 ? 0 : 1;
+            // Solo los nodos que pertenecen al grupo de ese lado van hacia el dedo
+            if (p.group === activeGroup) target = points[0];
+        } else if (points.length >= 2) {
+            // Si hay dos dedos, ordenamos cuál es el izquierdo y cuál el derecho en la pantalla
+            let leftPoint = points[0].x < points[1].x ? points[0] : points[1];
+            let rightPoint = points[0].x < points[1].x ? points[1] : points[0];
+            
+            // Asignamos el toque izquierdo al grupo 0 y el derecho al grupo 1
+            target = p.group === 0 ? leftPoint : rightPoint;
+        }
 
-            if (nearest && nearestDist < 80) { 
-                p.x = lerp(p.x, nearest.x, 0.07); 
-                p.y = lerp(p.y, nearest.y, 0.07); 
+        if (target) {
+            let d = Math.hypot(target.x - p.x, target.y - p.y);
+            if (d < 220) { 
+                p.x = lerp(p.x, target.x, 0.08); 
+                p.y = lerp(p.y, target.y, 0.08); 
             } else { 
                 p.x = lerp(p.x, autoX, 0.1); 
                 p.y = lerp(p.y, autoY, 0.1); 
             }
         } else { 
+            // Si no hay target para este nodo, sigue flotando en su lugar base
             p.x = lerp(p.x, autoX, 0.1); 
             p.y = lerp(p.y, autoY, 0.1); 
         }
@@ -908,11 +920,11 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
 
     // 2. Dibujamos líneas y calculamos la fuerza de las conexiones
     ctx.fillStyle = 'rgba(132, 156, 139, 0.2)';
-    for(let i=0; i<cNodes.length; i++) {
-        for(let j=i+1; j<cNodes.length; j++) {
+    for(let i = 0; i < cNodes.length; i++) {
+        for(let j = i + 1; j < cNodes.length; j++) {
             let dx = cNodes[j].x - cNodes[i].x; 
             let dy = cNodes[j].y - cNodes[i].y;
-            let d = Math.sqrt(dx*dx + dy*dy);
+            let d = Math.sqrt(dx * dx + dy * dy);
             
             if(d < 80) {
                 ctx.save(); 
@@ -922,7 +934,6 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
                 ctx.restore();
 
                 let baseStrength = 1 - (d / 80);
-                
                 let multiplier = (cNodes[i].isCore || cNodes[j].isCore) ? 3.0 : 1.0;
                 let finalStrength = baseStrength * multiplier;
 
@@ -934,16 +945,13 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
 
     // 3. Dibujamos los cuadrados aplicando el crecimiento y relleno
     cNodes.forEach(p => { 
-        // Límite ajustado a 12.0 para que alcance el 100% al agrupar los 16
-        let targetBonus = Math.min(1, p.weight / 12.0); 
+        // 24.0 exige que los dos bloques se unan para llegar al 100% de la capacidad del cuadrado
+        let targetBonus = Math.min(1, p.weight / 24.0); 
         
         let baseFill = p.isCore ? 0.4 : 0;
         let baseSize = p.isCore ? 14 : 10;
         
         let finalFill = baseFill + targetBonus * (1 - baseFill);
-        
-        // CRECIMIENTO: Le sumamos 1.5 veces su tamaño base, 
-        // lo que hace que llegue a MÁS del doble (14px -> 35px)
         let finalSize = baseSize + (targetBonus * baseSize * 1.5); 
         
         p.fillLevel = lerp(p.fillLevel, finalFill, 0.15);
