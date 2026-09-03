@@ -459,15 +459,15 @@ let herenciaNodes = [];
 let herenciaActiveNode = null; 
 
 initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
-    const maxLayers = 4;
     const baseRadius = 26; 
-    const spreadStep = 11; // Distancia entre capas mucho más compacta
+    const spreadStep = 11; 
 
     if (herenciaNodes.length === 0) {
+        // maxLayers: total de capas (1 núcleo + X adicionales)
         herenciaNodes = [
-            { id: 0, x: 140, y: 130, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }, 
-            { id: 1, x: 280, y: 180, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }, 
-            { id: 2, x: 160, y: 280, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }  
+            { id: 0, x: 140, y: 130, maxLayers: 3, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }, // 2 capas extra
+            { id: 1, x: 280, y: 180, maxLayers: 5, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }, // 4 capas extra
+            { id: 2, x: 160, y: 280, maxLayers: 4, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }  // 3 capas extra
         ];
     }
 
@@ -484,26 +484,44 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
         const frame = frameTotal % 260; 
         
         activeBaseIndex = Math.floor(frameTotal / 260) % 3;
+        const currentActiveMax = herenciaNodes[activeBaseIndex].maxLayers;
+        const extraLayers = currentActiveMax - 1; // 2, 4 o 3 capas extra
 
-        if (frame < 15) {
-            baseSettled = 1; baseProgress = 0;
-        } else if (frame < 55) { 
-            baseSettled = 1; baseProgress = (frame - 15) / 40; 
-        } else if (frame < 65) {
-            baseSettled = 2; baseProgress = 0;
-        } else if (frame < 105) { 
-            baseSettled = 2; baseProgress = (frame - 65) / 40; 
-        } else if (frame < 115) {
-            baseSettled = 3; baseProgress = 0;
-        } else if (frame < 155) { 
-            baseSettled = 3; baseProgress = (frame - 115) / 40; 
-        } else if (frame < 170) {
-            baseSettled = 4; baseProgress = 0;
-        } else if (frame < 250) { 
-            baseSettled = 4; baseProgress = 0;
-            baseFadeOut = 1 - ((frame - 170) / 80); 
+        // Tiempos del ciclo adaptados a la cantidad de capas del nodo activo
+        const animStart = 15;
+        const animEnd = 170;
+        const fadeStart = 170;
+        const fadeEnd = 250;
+
+        if (frame < animStart) {
+            baseSettled = 1;
+            baseProgress = 0;
+            baseFadeOut = 1;
+        } else if (frame < animEnd) {
+            baseFadeOut = 1;
+            const animDuration = animEnd - animStart;
+            const layerSlot = animDuration / extraLayers;
+            const progressInAnim = frame - animStart;
+            const currentStep = Math.min(extraLayers - 1, Math.floor(progressInAnim / layerSlot));
+            const frameInSlot = progressInAnim - currentStep * layerSlot;
+
+            const growWindow = layerSlot * 0.75;
+            baseSettled = 1 + currentStep;
+
+            if (frameInSlot < growWindow) {
+                baseProgress = frameInSlot / growWindow;
+            } else {
+                baseSettled = 1 + currentStep + 1;
+                baseProgress = 0;
+            }
+        } else if (frame < fadeEnd) {
+            baseSettled = currentActiveMax;
+            baseProgress = 0;
+            baseFadeOut = 1 - ((frame - fadeStart) / (fadeEnd - fadeStart));
         } else {
-            baseSettled = 1; baseProgress = 0;
+            baseSettled = 1;
+            baseProgress = 0;
+            baseFadeOut = 1;
         }
     } else {
         // --- ESTADO INTERACTIVO ---
@@ -533,7 +551,8 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
                 if (!node.locked) {
                     let dragAmount = currentDist - node.baseDist;
                     
-                    if (dragAmount > 0 && node.layers < maxLayers) {
+                    // Zoom In respetando el límite individual de este nodo
+                    if (dragAmount > 0 && node.layers < node.maxLayers) {
                         node.progress = Math.min(1, dragAmount / 45);
                         if (node.progress >= 1) {
                             node.layers++;
@@ -541,6 +560,7 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
                             node.locked = true; 
                         }
                     } 
+                    // Zoom Out
                     else if (dragAmount < 0 && node.layers > 1) {
                         node.progress = Math.max(-1, dragAmount / 45); 
                         if (node.progress <= -1) {
@@ -598,7 +618,7 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
         let localSpreadStep = spreadStep * node.scale;
 
         // 1. CAPA NUEVA AL FONDO
-        if (drawProgress > 0.001 && drawSettled < maxLayers) {
+        if (drawProgress > 0.001 && drawSettled < node.maxLayers) {
             const nextLayer = drawSettled + 1;
             const wave = Math.sin(time * 1.2 + nextLayer + node.id) * 3 * node.scale; 
             const prevRadius = localBaseRadius + (drawSettled - 1) * localSpreadStep;
