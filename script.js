@@ -455,143 +455,190 @@ initCanvas('canvas-memoria', (ctx, size, mouse, time) => {
 });
 
 // --- HERENCIA ---
-let herenciaLayersCount = 1; 
-let herenciaLayerProgress = 0; 
-let herenciaBaseDist = null;
-let herenciaGestureLocked = false; 
+let herenciaNodes = [];
+let herenciaActiveNode = null; 
 
 initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
-    const maxLayers = 6;
-    const baseRadius = 28;
-    const spreadStep = 24;
+    const maxLayers = 4;
+    const baseRadius = 26; 
+    const spreadStep = 11; // Distancia entre capas mucho más compacta
+
+    if (herenciaNodes.length === 0) {
+        herenciaNodes = [
+            { id: 0, x: 140, y: 130, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }, 
+            { id: 1, x: 280, y: 180, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }, 
+            { id: 2, x: 160, y: 280, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }  
+        ];
+    }
 
     const isInDetailView = overlay.classList.contains('active') && currentCanvas && currentCanvas.id === 'canvas-herencia';
 
-    let drawSettled = herenciaLayersCount;
-    let drawProgress = herenciaLayerProgress;
+    // --- VARIABLES GLOBALES DEL ESTADO BASE ---
+    let baseSettled = 1;
+    let baseProgress = 0;
     let baseFadeOut = 1; 
+    let activeBaseIndex = 0;
 
     if (!isInDetailView) {
-        // --- ESTADO BASE (EN LA GRILLA): Sincronizado a 260 frames con Memoria ---
-        const frame = Math.floor(time * 60) % 260;
+        const frameTotal = Math.floor(time * 60);
+        const frame = frameTotal % 260; 
+        
+        activeBaseIndex = Math.floor(frameTotal / 260) % 3;
 
         if (frame < 15) {
-            drawSettled = 1; drawProgress = 0;
+            baseSettled = 1; baseProgress = 0;
         } else if (frame < 55) { 
-            drawSettled = 1; drawProgress = (frame - 15) / 40; 
+            baseSettled = 1; baseProgress = (frame - 15) / 40; 
         } else if (frame < 65) {
-            drawSettled = 2; drawProgress = 0;
+            baseSettled = 2; baseProgress = 0;
         } else if (frame < 105) { 
-            drawSettled = 2; drawProgress = (frame - 65) / 40; 
+            baseSettled = 2; baseProgress = (frame - 65) / 40; 
         } else if (frame < 115) {
-            drawSettled = 3; drawProgress = 0;
+            baseSettled = 3; baseProgress = 0;
         } else if (frame < 155) { 
-            drawSettled = 3; drawProgress = (frame - 115) / 40; 
+            baseSettled = 3; baseProgress = (frame - 115) / 40; 
         } else if (frame < 170) {
-            drawSettled = 4; drawProgress = 0;
+            baseSettled = 4; baseProgress = 0;
         } else if (frame < 250) { 
-            drawSettled = 4; drawProgress = 0;
+            baseSettled = 4; baseProgress = 0;
             baseFadeOut = 1 - ((frame - 170) / 80); 
         } else {
-            drawSettled = 1; drawProgress = 0;
+            baseSettled = 1; baseProgress = 0;
         }
     } else {
-        // --- ESTADO INTERACTIVO (EN DETALLE): Exclusivo para 2 dedos ---
-        // Verificamos estrictamente que haya 2 o más toques en pantalla
+        // --- ESTADO INTERACTIVO ---
         const isInteracting = mouse.touches.length >= 2;
 
         if (isInteracting) {
-            // Calculamos la distancia únicamente entre el dedo 1 y el dedo 2
             const [a, b] = mouse.touches;
             let currentDist = Math.hypot(a.x - b.x, a.y - b.y);
+            
+            let midX = (a.x + b.x) / 2;
+            let midY = (a.y + b.y) / 2;
 
-            if (herenciaBaseDist === null) {
-                herenciaBaseDist = currentDist;
-            } else if (!herenciaGestureLocked) {
-                let dragAmount = currentDist - herenciaBaseDist;
-                
-                // 1. GESTO DE EXPANDIR (Zoom In)
-                if (dragAmount > 0 && herenciaLayersCount < maxLayers) {
-                    herenciaLayerProgress = Math.min(1, dragAmount / 45);
-
-                    if (herenciaLayerProgress >= 1) {
-                        herenciaLayersCount++;
-                        herenciaLayerProgress = 0; 
-                        herenciaGestureLocked = true; 
+            if (herenciaActiveNode === null) {
+                let closest = null;
+                let minDist = Infinity;
+                herenciaNodes.forEach(node => {
+                    let d = Math.hypot(node.x - midX, node.y - midY);
+                    if (d < minDist) { 
+                        minDist = d; 
+                        closest = node; 
                     }
-                } 
-                // 2. GESTO DE ENCOGER (Zoom Out)
-                else if (dragAmount < 0 && herenciaLayersCount > 1) {
-                    herenciaLayerProgress = Math.max(-1, dragAmount / 45); 
-
-                    if (herenciaLayerProgress <= -1) {
-                        herenciaLayersCount--; 
-                        herenciaLayerProgress = 0; 
-                        herenciaGestureLocked = true; 
+                });
+                herenciaActiveNode = closest;
+                closest.baseDist = currentDist;
+            } else {
+                let node = herenciaActiveNode;
+                if (!node.locked) {
+                    let dragAmount = currentDist - node.baseDist;
+                    
+                    if (dragAmount > 0 && node.layers < maxLayers) {
+                        node.progress = Math.min(1, dragAmount / 45);
+                        if (node.progress >= 1) {
+                            node.layers++;
+                            node.progress = 0; 
+                            node.locked = true; 
+                        }
+                    } 
+                    else if (dragAmount < 0 && node.layers > 1) {
+                        node.progress = Math.max(-1, dragAmount / 45); 
+                        if (node.progress <= -1) {
+                            node.layers--; 
+                            node.progress = 0; 
+                            node.locked = true; 
+                        }
                     }
                 }
             }
         } else {
-            if (herenciaLayerProgress !== 0 && !herenciaGestureLocked) {
-                herenciaLayerProgress = lerp(herenciaLayerProgress, 0, 0.2);
-                if (Math.abs(herenciaLayerProgress) < 0.01) herenciaLayerProgress = 0;
+            herenciaActiveNode = null;
+            herenciaNodes.forEach(node => {
+                if (node.progress !== 0 && !node.locked) {
+                    node.progress = lerp(node.progress, 0, 0.2);
+                    if (Math.abs(node.progress) < 0.01) node.progress = 0;
+                }
+                node.locked = false;
+                node.baseDist = null;
+            });
+        }
+    }
+
+    // --- RENDERIZADO INDEPENDIENTE PARA CADA NODO ---
+    herenciaNodes.forEach((node, index) => {
+        let drawSettled = 1;
+        let drawProgress = 0;
+        let fade = 1;
+        let targetScale = 1;
+
+        if (isInDetailView) {
+            drawSettled = node.layers;
+            drawProgress = node.progress;
+            if (drawProgress < 0) {
+                drawSettled = node.layers - 1;
+                drawProgress = 1.0 + drawProgress; 
             }
-            herenciaGestureLocked = false;
-            herenciaBaseDist = null;
-        }
-
-        if (herenciaLayerProgress < 0) {
-            drawSettled = herenciaLayersCount - 1;
-            drawProgress = 1.0 + herenciaLayerProgress; 
         } else {
-            drawSettled = herenciaLayersCount;
-            drawProgress = herenciaLayerProgress;
+            if (index === activeBaseIndex) {
+                drawSettled = baseSettled;
+                drawProgress = baseProgress;
+                fade = baseFadeOut;
+                targetScale = 1;
+            } else {
+                drawSettled = 1;
+                drawProgress = 0;
+                fade = 1;
+                targetScale = 0.77; 
+            }
         }
-    }
 
-    // --- RENDERIZADO ---
+        node.scale = lerp(node.scale, targetScale, 0.08);
 
-    // 1. DIBUJAMOS LA CAPA NUEVA AL FONDO
-    if (drawProgress > 0.001 && drawSettled < maxLayers) {
-        const nextLayer = drawSettled + 1;
-        const wave = Math.sin(time * 1.2 + nextLayer) * 3;
-        const prevRadius = baseRadius + (drawSettled - 1) * spreadStep;
-        const targetRadius = baseRadius + (nextLayer - 1) * spreadStep;
-        
-        const radius = prevRadius + (targetRadius - prevRadius) * drawProgress + wave;
-        
-        let opacity = 0.55 - (nextLayer - 1) * 0.08; 
-        let finalOpacity = Math.max(0.08, opacity);
-        
-        if (!isInDetailView && nextLayer > 1) finalOpacity *= baseFadeOut;
-        
-        if (finalOpacity > 0.01) {
-            ctx.fillStyle = `rgba(112, 128, 144, ${finalOpacity})`;
-            ctx.beginPath(); 
-            ctx.arc(size / 2, size / 2, Math.max(0, radius), 0, Math.PI * 2); 
-            ctx.fill();
-        }
-    }
+        let localBaseRadius = baseRadius * node.scale;
+        let localSpreadStep = spreadStep * node.scale;
 
-    // 2. DIBUJAMOS LAS CAPAS FIJAS AL FRENTE
-    for (let i = drawSettled; i >= 1; i--) {
-        const wave = Math.sin(time * 1.2 + i) * 3;
-        const radius = baseRadius + (i - 1) * spreadStep + wave;
-        
-        let opacity = 0.55 - (i - 1) * 0.08; 
-        let finalOpacity = Math.max(0.08, opacity);
-        
-        if (!isInDetailView && i > 1) {
-            finalOpacity *= baseFadeOut;
+        // 1. CAPA NUEVA AL FONDO
+        if (drawProgress > 0.001 && drawSettled < maxLayers) {
+            const nextLayer = drawSettled + 1;
+            const wave = Math.sin(time * 1.2 + nextLayer + node.id) * 3 * node.scale; 
+            const prevRadius = localBaseRadius + (drawSettled - 1) * localSpreadStep;
+            const targetRadius = localBaseRadius + (nextLayer - 1) * localSpreadStep;
+            
+            const radius = prevRadius + (targetRadius - prevRadius) * drawProgress + wave;
+            
+            let opacity = 0.55 - (nextLayer - 1) * 0.08; 
+            let finalOpacity = Math.max(0.08, opacity);
+            
+            if (nextLayer > 1) finalOpacity *= fade;
+            
+            if (finalOpacity > 0.01) {
+                ctx.fillStyle = `rgba(112, 128, 144, ${finalOpacity})`;
+                ctx.beginPath(); 
+                ctx.arc(node.x, node.y, Math.max(0, radius), 0, Math.PI * 2); 
+                ctx.fill();
+            }
         }
-        
-        if (finalOpacity > 0.01) {
-            ctx.fillStyle = `rgba(112, 128, 144, ${finalOpacity})`;
-            ctx.beginPath(); 
-            ctx.arc(size / 2, size / 2, Math.max(0, radius), 0, Math.PI * 2); 
-            ctx.fill();
+
+        // 2. CAPAS FIJAS AL FRENTE
+        for (let i = drawSettled; i >= 1; i--) {
+            const wave = Math.sin(time * 1.2 + i + node.id) * 3 * node.scale;
+            const radius = localBaseRadius + (i - 1) * localSpreadStep + wave;
+            
+            let opacity = 0.55 - (i - 1) * 0.08; 
+            let finalOpacity = Math.max(0.08, opacity);
+            
+            if (i > 1) {
+                finalOpacity *= fade;
+            }
+            
+            if (finalOpacity > 0.01) {
+                ctx.fillStyle = `rgba(112, 128, 144, ${finalOpacity})`;
+                ctx.beginPath(); 
+                ctx.arc(node.x, node.y, Math.max(0, radius), 0, Math.PI * 2); 
+                ctx.fill();
+            }
         }
-    }
+    });
 });
 
 // --- CADUCIDAD ---
