@@ -123,19 +123,22 @@ h1 {
     color: #000;
     border: none;
     font-family: 'Montserrat', sans-serif;
-    font-weight: 500; /* Montserrat Medium */
+    font-weight: 500; 
     font-size: 0.95rem;
     text-transform: uppercase;
-    letter-spacing: -0.05em; /* Equivalente al -5% */
+    letter-spacing: -0.05em; 
     cursor: pointer;
     z-index: 1010;
     transition: transform 0.2s ease;
-    
-    /* Alineación de la flecha y el texto */
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px; /* Separación entre el icono y la palabra */
+    gap: 6px; 
+}
+
+/* NUEVO: Forzamos que el botón de celu se oculte en escritorio */
+.btn-volver.mob-only {
+    display: none;
 }
 
 .btn-volver:hover { transform: translateX(-4px); }
@@ -251,6 +254,7 @@ h1 {
         margin-top: 20px;
         margin-bottom: 50px; 
         font-size: 1rem;
+        display: flex !important;
     }
 }
 
