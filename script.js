@@ -5,55 +5,46 @@ const conceptsData = {
     'canvas-memoria': {
         title: 'Memoria',
         sub: 'Subsistema 1 - Registro',
-        //desc: 'Un juego de memoria estilo "Simón dice". La grilla ilumina uno o más círculos a la vez: hay que tocarlos todos en simultáneo (con multitouch) antes de que el sistema avance de ronda. Un error devuelve todo al estado inicial.',
         color: '#708090' 
     },
     'canvas-herencia': {
         title: 'Herencia',
         sub: 'Subsistema 1 - Legado',
-        //desc: 'Capas acumulativas que se transmiten. Con el gesto de expandir (pellizcar con dos dedos) la aurora del círculo crece de forma fluida y progresiva, dejando algo del estado anterior detrás.',
         color: '#708090'
     },
     'canvas-caducidad': {
         title: 'Caducidad',
-        sub: 'Subsistema 1 - Lo perdido',
-        //desc: 'Elementos que se encogen y desaparecen en el tránsito. Al acercarse, las formas revelan su fragilidad alterando su escala.',
+        sub: 'Subsistema 1 - Lo perdido en el tránsito',
         color: '#708090'
     },
     'canvas-identidad': {
         title: 'Identidad',
-        sub: 'Subsistema 2 - Afirmación',
-        //desc: 'Afirmación de sí frente al entorno. Arrastrá para girar los cuadrados alrededor del centro: cuanto más rápido gires, más crece y se rellena de color. Al soltar, vuelve a su posición inicial.',
+        sub: 'Subsistema 2 - Afirmación de si',
         color: '#849c8b' 
     },
     'canvas-empatia': {
         title: 'Empatía',
-        sub: 'Subsistema 2 - Comprensión',
-        //desc: 'La capacidad de acercarse al otro. Al detectar proximidad, la forma en movimiento pierde su dureza y ambas figuras vacías adquieren densidad llenándose de color.',
+        sub: 'Subsistema 2 - Comprensión del otro',
         color: '#849c8b'
     },
     'canvas-colaboracion': {
         title: 'Colaboración',
-        sub: 'Subsistema 2 - Coexistencia',
-        //desc: 'Nodos que tejen redes temporales. La interacción atrae los elementos individuales para forjar conexiones efímeras.',
+        sub: 'Subsistema 2 - Coexistencia de lo diverso',
         color: '#849c8b'
     },
     'canvas-incertidumbre': {
         title: 'Incertidumbre',
-        sub: 'Subsistema 3 - Desconocimiento',
-        //desc: 'Al tocar la figura central, ésta se fragmenta en pequeños triángulos de línea que flotan a la deriva. Hay que ir tocando cada uno para que regrese al centro y reconstruya la figura original.',
+        sub: 'Subsistema 3 - Desconocimiento del devenir',
         color: '#8d849c' 
     },
     'canvas-expectativa': {
         title: 'Expectativa',
         sub: 'Subsistema 3 - Anticipación',
-        //desc: 'Tensión acumulada que proyecta energía. Tocá la pantalla fuera del triángulo central, mantené presionado, jalá y soltá: cada gesto dispara una línea hacia el centro y lo hace crecer.',
         color: '#8d849c'
     },
     'canvas-ansiedad': {
         title: 'Ansiedad',
-        sub: 'Subsistema 3 - Pre-ocupación',
-        //desc: 'Movimiento constante y caótico. Arrastrá el pequeño indicador dibujando un triángulo por el espacio, esquivando a los nodos errantes: si te tocan, el trazo vuelve a empezar.',
+        sub: 'Subsistema 3 - Pre-ocupación sobre el futuro',
         color: '#8d849c'
     }
 };
@@ -463,11 +454,10 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
     const spreadStep = 11; 
 
     if (herenciaNodes.length === 0) {
-        // Inicializamos la escala en 0.77 para que arranquen chiquitos
         herenciaNodes = [
-            { id: 0, x: 140, y: 130, maxLayers: 3, layers: 1, progress: 0, baseDist: null, locked: false, scale: 0.77 }, 
-            { id: 1, x: 280, y: 180, maxLayers: 5, layers: 1, progress: 0, baseDist: null, locked: false, scale: 0.77 }, 
-            { id: 2, x: 160, y: 280, maxLayers: 4, layers: 1, progress: 0, baseDist: null, locked: false, scale: 0.77 }  
+            { id: 0, x: 130, y: 115, maxLayers: 5, layers: 1, progress: 0, baseDist: null, locked: false, scale: 0.77, sizeMod: 0.75 }, 
+            { id: 1, x: 275, y: 195, maxLayers: 2, layers: 1, progress: 0, baseDist: null, locked: false, scale: 0.77, sizeMod: 1.7 }, 
+            { id: 2, x: 155, y: 275, maxLayers: 3, layers: 1, progress: 0, baseDist: null, locked: false, scale: 0.77, sizeMod: 1.25 }  
         ];
     }
 
@@ -484,6 +474,7 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
         const frame = frameTotal % 260; 
         
         activeBaseIndex = Math.floor(frameTotal / 260) % 3;
+        
         const currentActiveMax = herenciaNodes[activeBaseIndex].maxLayers;
         const extraLayers = currentActiveMax - 1;
 
@@ -595,8 +586,6 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
                 drawSettled = node.layers - 1;
                 drawProgress = 1.0 + drawProgress; 
             }
-            // ACÁ ESTÁ LA MAGIA DEL EFECTO FOCO:
-            // Si lo estoy tocando, se agranda. Si lo suelto, se achica.
             targetScale = (herenciaActiveNode === node) ? 1 : 0.77;
         } else {
             if (index === activeBaseIndex) {
@@ -612,25 +601,30 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
             }
         }
 
-        // Interpolamos la escala para que sea un movimiento fluido
         node.scale = lerp(node.scale, targetScale, 0.08);
 
-        let localBaseRadius = baseRadius * node.scale;
-        let localSpreadStep = spreadStep * node.scale;
+        let localBaseRadius = baseRadius * node.scale * node.sizeMod;
+        let localSpreadStep = spreadStep * node.scale * node.sizeMod;
+
+        let activeLevel = (drawSettled - 1 + Math.max(0, drawProgress)) / (node.maxLayers - 1);
+        let coreOpacity = 0.25 + (activeLevel * 0.50);
 
         // 1. CAPA NUEVA AL FONDO
         if (drawProgress > 0.001 && drawSettled < node.maxLayers) {
             const nextLayer = drawSettled + 1;
-            const wave = Math.sin(time * 1.2 + nextLayer + node.id) * 3 * node.scale; 
+            const wave = Math.sin(time * 1.2 + nextLayer + node.id) * 3 * node.scale * node.sizeMod; 
             const prevRadius = localBaseRadius + (drawSettled - 1) * localSpreadStep;
             const targetRadius = localBaseRadius + (nextLayer - 1) * localSpreadStep;
             
             const radius = prevRadius + (targetRadius - prevRadius) * drawProgress + wave;
             
-            let opacity = 0.55 - (nextLayer - 1) * 0.08; 
-            let finalOpacity = Math.max(0.08, opacity);
+            let layerOpacity = coreOpacity - (nextLayer - 1) * 0.12; 
+            let finalOpacity = Math.max(0.05, layerOpacity);
             
-            if (nextLayer > 1) finalOpacity *= fade;
+            // Las capas expansivas SÍ desaparecen al terminar el ciclo
+            if (nextLayer > 1) {
+                finalOpacity *= fade;
+            }
             
             if (finalOpacity > 0.01) {
                 ctx.fillStyle = `rgba(112, 128, 144, ${finalOpacity})`;
@@ -642,14 +636,19 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
 
         // 2. CAPAS FIJAS AL FRENTE
         for (let i = drawSettled; i >= 1; i--) {
-            const wave = Math.sin(time * 1.2 + i + node.id) * 3 * node.scale;
+            const wave = Math.sin(time * 1.2 + i + node.id) * 3 * node.scale * node.sizeMod;
             const radius = localBaseRadius + (i - 1) * localSpreadStep + wave;
             
-            let opacity = 0.55 - (i - 1) * 0.08; 
-            let finalOpacity = Math.max(0.08, opacity);
+            let layerOpacity = coreOpacity - (i - 1) * 0.12; 
+            let finalOpacity = Math.max(0.05, layerOpacity);
             
+            // ACÁ ESTÁ LA SOLUCIÓN:
             if (i > 1) {
-                finalOpacity *= fade;
+                // Las capas extra desaparecen con el fade
+                finalOpacity *= fade; 
+            } else if (fade < 1) {
+                // El círculo base NUNCA desaparece. Retorna suavemente a su gris tenue (0.25)
+                finalOpacity = 0.25 + (finalOpacity - 0.25) * fade; 
             }
             
             if (finalOpacity > 0.01) {
@@ -1270,6 +1269,117 @@ initCanvas('canvas-incertidumbre', (ctx, size, mouse, time) => {
     }
 });
 
+// --- EXPECTATIVA ---
+let expAmbientTriangles = [];
+
+initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
+    const cx = size / 2;
+    const cy = size / 2;
+
+    // 1. Detectar número de dedos táctiles o click activo
+    let activeTouchesCount = mouse.touches.length > 0
+        ? mouse.touches.length
+        : (mouse.isDown ? 1 : 0);
+
+    // 2. Si estás presionando teclas en la PC, sobreescribimos el contador de touches
+    if (activeKeys.size > 0) {
+        activeTouchesCount = activeKeys.size;
+    }
+
+    // Mínimo 6 triángulos pequeños (0 contactos = 6, 1 contacto = 12, 2 contactos = 18, etc.)
+    const totalTrianglesNeeded = 6 + (activeTouchesCount * 6);
+
+    // Ajustar dinámicamente el pool de triángulos según la interacción táctil
+    while (expAmbientTriangles.length < totalTrianglesNeeded) {
+        expAmbientTriangles.push({
+            angle: Math.random() * Math.PI * 2,
+            dist: 160 + Math.random() * 60,
+            speed: 2.2 + Math.random() * 1.2,
+            rotation: Math.random() * Math.PI * 2,
+            rotSpeed: (Math.random() - 0.5) * 2,
+            size: 11 + Math.random() * 5,
+            seed: Math.random() * 100,
+            alphaSpeed: 1.5 + Math.random() * 2.0
+        });
+    }
+
+    const trianglesToDraw = expAmbientTriangles.slice(0, totalTrianglesNeeded);
+    const isInteracting = activeTouchesCount > 0;
+    const currentSpeed = isInteracting ? 4.2 : 2.5;
+
+    // --- CAPA 1 (FONDO): RENDERIZADO DE TRIÁNGULOS PEQUEÑOS ---
+    ctx.lineWidth = 1.8;
+
+    trianglesToDraw.forEach((tri) => {
+        // Viaje convergente hacia el centro
+        tri.dist -= (tri.speed * (currentSpeed / 2.5));
+        tri.rotation += tri.rotSpeed * 0.03;
+
+        // Reinicio progresivo al tocar/acercarse al triángulo grande central
+        if (tri.dist < 45) {
+            tri.dist = 210 + Math.random() * 40;
+            tri.angle = Math.random() * Math.PI * 2;
+        }
+
+        const x = cx + Math.cos(tri.angle) * tri.dist;
+        const y = cy + Math.sin(tri.angle) * tri.dist;
+
+        // Opacidad orgánica e individual con mínimo de 0.50 (50%)
+        const randomAlpha = 0.50 + ((Math.sin(time * tri.alphaSpeed + tri.seed) + 1) / 2) * 0.45;
+
+        ctx.strokeStyle = `rgba(122, 113, 140, ${randomAlpha})`;
+        ctx.fillStyle = `rgba(122, 113, 140, ${randomAlpha * 0.4})`;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(tri.rotation);
+
+        if (typeof drawSolidTriangle === 'function' && typeof drawTriangleOutline === 'function') {
+            drawSolidTriangle(ctx, 0, 0, tri.size, 0);
+            drawTriangleOutline(ctx, 0, 0, tri.size, 0);
+        } else {
+            // Geometría manual por respaldo si las funciones helper no están disponibles
+            ctx.beginPath();
+            for (let k = 0; k < 3; k++) {
+                const a = (k * 2 * Math.PI) / 3 - Math.PI / 2;
+                const tx = Math.cos(a) * tri.size;
+                const ty = Math.sin(a) * tri.size;
+                if (k === 0) ctx.moveTo(tx, ty);
+                else ctx.lineTo(tx, ty);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    });
+
+    // --- CAPA 2 (FRENTE): RENDERIZADO DEL TRIÁNGULO PRINCIPAL ---
+    
+    // Cálculo de respiración y tamaño
+    const breathSpeed = isInteracting ? 2.5 : 1.2;
+    const breathCycle = Math.sin(time * breathSpeed);
+    const breathDepth = isInteracting ? 16 : 6;
+    const baseRadius = 60 + (activeTouchesCount * 10);
+    const finalRadius = baseRadius + (breathCycle * breathDepth);
+
+    // 1. Parpadeo e intensidad interior con el mismo tono de los pequeños
+    const blinkSpeed = isInteracting ? 4.5 : 1.5;
+    const rawSin = Math.sin(time * blinkSpeed);
+    const fillIntensity = Math.max(0, Math.min(1, rawSin * 2.0 + 0.5));
+
+    if (fillIntensity > 0.01) {
+        ctx.fillStyle = `rgba(122, 113, 140, ${fillIntensity * 0.45})`;
+        drawSolidTriangle(ctx, cx, cy, finalRadius, 0);
+    }
+
+    // 2. Contorno principal por encima
+    ctx.strokeStyle = '#7a718c';
+    ctx.lineWidth = 3;
+    drawTriangleOutline(ctx, cx, cy, finalRadius, 0);
+});
+
 // --- ANSIEDAD ---
 // 9 triángulos grandes con gran amplitud de parpadeo (de muy claro a casi sólido)
 let ansNodes = Array.from({length: 9}, (_, i) => ({
@@ -1416,93 +1526,3 @@ initCanvas('canvas-ansiedad', (ctx, size, mouse, time) => {
         ctx.restore();
     });
 }, null, triggerAnsiedadInteraction);
-
-// --- EXPECTATIVA ---
-let expAmbientLines = [];
-
-initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
-    const cx = size / 2;
-    const cy = size / 2;
-
-    // 1. Detectar número de dedos táctiles o click activo
-    let activeTouchesCount = mouse.touches.length > 0
-        ? mouse.touches.length
-        : (mouse.isDown ? 1 : 0);
-
-    // 2. Si estás presionando teclas en la PC, sobreescribimos el contador de touches
-    if (activeKeys.size > 0) {
-        activeTouchesCount = activeKeys.size;
-    }
-
-    // Mínimo 3 líneas base (0 contactos = 3 líneas, 1 contacto = 6 líneas, 2 contactos = 9 líneas, etc.)
-    const totalLinesNeeded = 3 + (activeTouchesCount * 3);
-
-    // Ajustar dinámicamente el pool de líneas según la interacción táctil
-    while (expAmbientLines.length < totalLinesNeeded) {
-        expAmbientLines.push({
-            angle: Math.random() * Math.PI * 2,
-            dist: 140 + Math.random() * 50,
-            speed: 2.8 + Math.random() * 1.2
-        });
-    }
-
-    const linesToDraw = expAmbientLines.slice(0, totalLinesNeeded);
-    const isInteracting = activeTouchesCount > 0;
-    const currentSpeed = isInteracting ? 4.2 : 2.5;
-
-    // --- 1. RENDERIZADO DE LÍNEAS ---
-    ctx.strokeStyle = isInteracting ? 'rgba(141, 132, 156, 0.8)' : 'rgba(141, 132, 156, 0.45)';
-    ctx.lineWidth = isInteracting ? 2.2 : 1.8;
-
-    linesToDraw.forEach((line) => {
-        line.dist -= (line.speed * (currentSpeed / 2.5));
-
-        // Reinicio progresivo al acercarse al centro
-        if (line.dist < 18) {
-            line.dist = 180 + Math.random() * 30;
-            line.angle = Math.random() * Math.PI * 2;
-        }
-
-        const headX = cx + Math.cos(line.angle) * line.dist;
-        const headY = cy + Math.sin(line.angle) * line.dist;
-        const tailX = cx + Math.cos(line.angle) * (line.dist + 30);
-        const tailY = cy + Math.sin(line.angle) * (line.dist + 30);
-
-        ctx.beginPath();
-        ctx.moveTo(headX, headY);
-        ctx.lineTo(tailX, tailY);
-        ctx.stroke();
-    });
-
-    // --- 2. MOVIMIENTO TIPO RESPIRACIÓN ---
-    // Usamos ondas senoidales suaves para simular la inhalación y exhalación
-    const breathSpeed = isInteracting ? 2.2 : 1.2;
-    const breathCycle = Math.sin(time * breathSpeed);
-   
-    // Escala del radio base e intensidad según la respiración
-    const breathDepth = isInteracting ? 8 : 5;
-    const baseRadius = 48 + (activeTouchesCount * 3);
-    const finalRadius = baseRadius + (breathCycle * breathDepth);
-
-    /*ctx.fillStyle = '#6f667d';
-    drawSolidTriangle(ctx, cx, cy, finalRadius, 0);*/
-
-// --- 3. DIBUJO DEL CONTORNO Y PARPADEO INTERIOR ---
-
-  // 1. El triángulo base (solo contorno, siempre visible)
-  ctx.strokeStyle = '#7a718c';
-  ctx.lineWidth = 3;
-  drawTriangleOutline(ctx, cx, cy, finalRadius, 0);
-
-  // 2. Lógica del parpadeo frenético
-  const blinkSpeed = isInteracting ? 4.5 : 1.5;
-  const rawSin = Math.sin(time * blinkSpeed);
-  const fillIntensity = Math.max(0, Math.min(1, rawSin * 2.0 + 0.5));
-
-  // 3. Relleno del triangulo con opacidad tope (similar incertidumbre)
-  if (fillIntensity > 0.01) {
-     // Multiplicamos por 0.45 para que se mantenga translúcido y deje ver el contorno
-      ctx.fillStyle = `rgba(141, 132, 156, ${fillIntensity * 0.45})`;
-      drawSolidTriangle(ctx, cx, cy, finalRadius, 0);
-  }
-});
