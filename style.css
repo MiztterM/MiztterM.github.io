@@ -1,0 +1,321 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background-color: #fff; 
+    color: #000;
+    font-family: 'Montserrat', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 60px 20px;
+    overflow-x: hidden;
+}
+
+/* --- CABECERA --- */
+header {
+    text-align: center;
+    margin-bottom: 50px;
+    max-width: 900px;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+    color: #111;
+}
+
+h1 {
+    font-size: 2.1rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    line-height: 1.2;
+}
+
+/* --- GRILLA PRINCIPAL --- */
+.system-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    max-width: 1000px;
+    width: 100%;
+}
+
+/* Tarjetas tipo Polaroid */
+.interface-card {
+    background-color: #F2F4F7;
+    padding: 15px 15px 25px 15px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.interface-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.canvas-container {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #fff; 
+    position: relative;
+    overflow: hidden;
+    pointer-events: none; 
+}
+
+.canvas-container canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.info { text-align: center; }
+
+.concept-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- VISTA DETALLE (OVERLAY) --- */
+#detail-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: #fff; 
+    z-index: 1000;
+    display: block; 
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; 
+}
+
+#detail-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.detail-content {
+    width: 100%;
+    max-width: 1200px; 
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    min-height: 100%;
+}
+
+/* Clases utilitarias para el botón responsive */
+.desk-only { display: block; }
+.mob-only { display: none; }
+
+.btn-volver {
+    background: transparent;
+    color: #000;
+    border: none;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500; 
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: -0.05em; 
+    cursor: pointer;
+    z-index: 1010;
+    transition: transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px; 
+}
+
+/* NUEVO: Forzamos que el botón de celu se oculte en escritorio */
+.btn-volver.mob-only {
+    display: none;
+}
+
+.btn-volver:hover { transform: translateX(-4px); }
+
+/* Ubicación del botón en PC */
+.btn-volver.desk-only {
+    position: absolute;
+    top: 60px; 
+    left: 30px; 
+}
+
+/* Panel Izquierdo (Texto) */
+.detail-left {
+    width: 45%;
+    padding: 130px 40px 80px 30px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.tag {
+    color: #fff; 
+    padding: 6px 14px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+}
+
+#detail-title {
+    font-size: 2.8rem; 
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    line-height: 1.1;
+    letter-spacing: -1px;
+}
+
+#detail-desc {
+    font-size: 1.05rem; 
+    line-height: 1.6;
+    font-weight: 500;
+    max-width: 95%;
+}
+
+/* Panel Derecho (Interacción libre) */
+.detail-right {
+    width: 55%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+}
+
+.detail-right canvas {
+    width: 100%;
+    max-width: 500px; 
+    height: auto;     
+    aspect-ratio: 1 / 1;
+    background-color: transparent; 
+    box-shadow: none; 
+    pointer-events: auto; 
+    cursor: crosshair;
+    touch-action: none;
+}
+
+/* --- RESPONSIVE MOBILE --- */
+@media (max-width: 1000px) {
+    .system-grid { grid-template-columns: repeat(2, 1fr); }
+    #detail-title { font-size: 2.2rem; }
+}
+
+@media (max-width: 768px) {
+    /* Switch de botones */
+    .desk-only { display: none !important; }
+    .mob-only { display: block !important; }
+    
+    .system-grid { grid-template-columns: 1fr; max-width: 400px; }
+    
+    /* ACÁ AJUSTAMOS EL TÍTULO PRINCIPAL PARA CELULARES */
+    h1 { font-size: 1rem; letter-spacing: -0.5px; }
+    .subtitle { font-size: 0.95rem; }
+    
+    /* Ajuste opcional para el título de la vista detalle en celu si lo ves muy grande */
+    #detail-title { font-size: 1.9rem; }
+
+    .detail-content {
+        flex-direction: column;
+        padding: 30px 20px;
+        justify-content: flex-start; 
+        align-items: center;
+    }
+
+    .detail-left {
+        width: 100%;
+        padding: 20px 0 0 0; 
+        text-align: left;
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    .detail-right { 
+        width: 100%; 
+        padding: 40px 0; 
+    }
+
+    .detail-right canvas {
+        max-width: 100%; 
+    }
+
+    .btn-volver.mob-only {
+        position: relative;
+        margin-top: 20px;
+        margin-bottom: 50px; 
+        font-size: 1rem;
+        display: flex !important;
+    }
+}
+
+/* --- BOTÓN MODO LÁMINA (SOLO PC > 1005px) --- */
+#btn-fullscreen-grid {
+    position: fixed;
+    top: 20px;
+    right: 30px;
+    background: #F2F4F7;
+    color: #000;
+    border: none;
+    padding: 10px 18px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    letter-spacing: 1px;
+    z-index: 900;
+    transition: background 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: block; /* Visible por defecto en pantallas grandes */
+}
+
+#btn-fullscreen-grid:hover {
+    background: #e2e6eb;
+    transform: translateY(-2px);
+}
+
+/* --- MODO LÁMINA: VISTA PANORÁMICA DE LAS 9 JUNTAS --- */
+body.fullscreen-grid-mode {
+    overflow: hidden; 
+    padding: 10px;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+body.fullscreen-grid-mode header {
+    display: none; 
+}
+
+body.fullscreen-grid-mode .system-grid {
+    max-width: 900px;
+    gap: 10px; 
+    transform: scale(0.56);
+    transform-origin: center center;
+    transition: transform 0.3s ease;
+}
+
+body.fullscreen-grid-mode .interface-card {
+    padding: 8px 8px 12px 8px;
+    gap: 8px;
+}
+
+body.fullscreen-grid-mode .concept-title {
+    font-size: 0.85rem;
+}
+
+/* --- OCULTAR EL BOTÓN SI LA PANTALLA ES MENOR A 1005px --- */
+@media (max-width: 1005px) {
+    #btn-fullscreen-grid {
+        display: none !important;
+    }
+}
