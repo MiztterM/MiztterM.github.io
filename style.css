@@ -123,12 +123,19 @@ h1 {
     color: #000;
     border: none;
     font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
+    font-weight: 500; /* Montserrat Medium */
     font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: -0.05em; /* Equivalente al -5% */
     cursor: pointer;
-    letter-spacing: 1px;
     z-index: 1010;
     transition: transform 0.2s ease;
+    
+    /* Alineación de la flecha y el texto */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px; /* Separación entre el icono y la palabra */
 }
 
 .btn-volver:hover { transform: translateX(-4px); }
