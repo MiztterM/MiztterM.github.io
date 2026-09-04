@@ -463,11 +463,11 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
     const spreadStep = 11; 
 
     if (herenciaNodes.length === 0) {
-        // maxLayers: total de capas (1 núcleo + X adicionales)
+        // Inicializamos la escala en 0.77 para que arranquen chiquitos
         herenciaNodes = [
-            { id: 0, x: 140, y: 130, maxLayers: 3, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }, // 2 capas extra
-            { id: 1, x: 280, y: 180, maxLayers: 5, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }, // 4 capas extra
-            { id: 2, x: 160, y: 280, maxLayers: 4, layers: 1, progress: 0, baseDist: null, locked: false, scale: 1 }  // 3 capas extra
+            { id: 0, x: 140, y: 130, maxLayers: 3, layers: 1, progress: 0, baseDist: null, locked: false, scale: 0.77 }, 
+            { id: 1, x: 280, y: 180, maxLayers: 5, layers: 1, progress: 0, baseDist: null, locked: false, scale: 0.77 }, 
+            { id: 2, x: 160, y: 280, maxLayers: 4, layers: 1, progress: 0, baseDist: null, locked: false, scale: 0.77 }  
         ];
     }
 
@@ -485,9 +485,8 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
         
         activeBaseIndex = Math.floor(frameTotal / 260) % 3;
         const currentActiveMax = herenciaNodes[activeBaseIndex].maxLayers;
-        const extraLayers = currentActiveMax - 1; // 2, 4 o 3 capas extra
+        const extraLayers = currentActiveMax - 1;
 
-        // Tiempos del ciclo adaptados a la cantidad de capas del nodo activo
         const animStart = 15;
         const animEnd = 170;
         const fadeStart = 170;
@@ -551,7 +550,6 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
                 if (!node.locked) {
                     let dragAmount = currentDist - node.baseDist;
                     
-                    // Zoom In respetando el límite individual de este nodo
                     if (dragAmount > 0 && node.layers < node.maxLayers) {
                         node.progress = Math.min(1, dragAmount / 45);
                         if (node.progress >= 1) {
@@ -560,7 +558,6 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
                             node.locked = true; 
                         }
                     } 
-                    // Zoom Out
                     else if (dragAmount < 0 && node.layers > 1) {
                         node.progress = Math.max(-1, dragAmount / 45); 
                         if (node.progress <= -1) {
@@ -598,6 +595,9 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
                 drawSettled = node.layers - 1;
                 drawProgress = 1.0 + drawProgress; 
             }
+            // ACÁ ESTÁ LA MAGIA DEL EFECTO FOCO:
+            // Si lo estoy tocando, se agranda. Si lo suelto, se achica.
+            targetScale = (herenciaActiveNode === node) ? 1 : 0.77;
         } else {
             if (index === activeBaseIndex) {
                 drawSettled = baseSettled;
@@ -612,6 +612,7 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
             }
         }
 
+        // Interpolamos la escala para que sea un movimiento fluido
         node.scale = lerp(node.scale, targetScale, 0.08);
 
         let localBaseRadius = baseRadius * node.scale;
