@@ -87,7 +87,7 @@ document.querySelectorAll('.btn-volver').forEach(btn => {
         overlay.classList.remove('active');
         document.body.style.overflow = 'auto'; 
 
-        // Reseteamos la fatiga de caducidad al salir para que al volver a entrar empiece rápido
+        // Reseteamos la fatiga de caducidad al salir
         cadRespawnCount = 0; 
     });
 });
@@ -115,14 +115,14 @@ const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
 const activeKeys = new Set();
 
 window.addEventListener('keydown', (e) => {
-    // Solo registra las teclas si el panel abierto es exactamente la Expectativa
-    if (currentCanvas && currentCanvas.id === 'canvas-expectativa') {
-        activeKeys.add(e.code);
-    }
+    // Solo registra las teclas si el panel abierto es exactamente la Expectativa
+    if (currentCanvas && currentCanvas.id === 'canvas-expectativa') {
+        activeKeys.add(e.code);
+    }
 });
 
 window.addEventListener('keyup', (e) => {
-    activeKeys.delete(e.code);
+    activeKeys.delete(e.code);
 });
 
 // Limpieza de seguridad: suelta las teclas virtuales si el usuario cambia de ventana
@@ -258,191 +258,190 @@ const MEM_BASE_RGB = [112, 128, 144];
 const MEM_OK_RGB = [132, 156, 139];
 const MEM_FAIL_RGB = [176, 110, 103];
 
-let memCircleLit = new Array(9).fill(0);    
+let memCircleLit = new Array(9).fill(0);    
 let memCircleColorMix = new Array(9).fill(0);
 
 function memGenerateSequence(round) {
-    const length = Math.min(3 + Math.floor((round - 1) / 3), 6);
-    const doubleChance = Math.min(0.65, 0.12 + round * 0.06);
-    const seq = [];
-    for (let i = 0; i < length; i++) {
-        const count = Math.random() < doubleChance ? 2 : 1;
-        const ids = new Set();
-        while (ids.size < count) ids.add(Math.floor(Math.random() * 9));
-        seq.push([...ids]);
-    }
-    return seq;
+    const length = Math.min(3 + Math.floor((round - 1) / 3), 6);
+    const doubleChance = Math.min(0.65, 0.12 + round * 0.06);
+    const seq = [];
+    for (let i = 0; i < length; i++) {
+        const count = Math.random() < doubleChance ? 2 : 1;
+        const ids = new Set();
+        while (ids.size < count) ids.add(Math.floor(Math.random() * 9));
+        seq.push([...ids]);
+    }
+    return seq;
 }
 memSequence = memGenerateSequence(memRound);
 
 initCanvas('canvas-memoria', (ctx, size, mouse, time) => {
-    if (memGrid.length === 0) {
-        const constellation = [
-            { x: 150, y: 120, r: 18 },
-            { x: 230, y: 100, r: 24 },
-            { x: 300, y: 150, r: 14 },
-            { x: 100, y: 200, r: 15 },
-            { x: 200, y: 190, r: 20 },
-            { x: 270, y: 230, r: 18 },
-            { x: 130, y: 280, r: 22 },
-            { x: 210, y: 270, r: 14 },
-            { x: 280, y: 310, r: 16 }  
-        ];
+    if (memGrid.length === 0) {
+        const constellation = [
+            { x: 150, y: 120, r: 18 },
+            { x: 230, y: 100, r: 24 },
+            { x: 300, y: 150, r: 14 },
+            { x: 100, y: 200, r: 15 },
+            { x: 200, y: 190, r: 20 },
+            { x: 270, y: 230, r: 18 },
+            { x: 130, y: 280, r: 22 },
+            { x: 210, y: 270, r: 14 },
+            { x: 280, y: 310, r: 16 }  
+        ];
 
-        constellation.forEach((pos, i) => {
-            memGrid.push({
-                x: pos.x, y: pos.y,
-                r: pos.r,
-                id: i,
-                seedX: Math.random() * 100, seedY: Math.random() * 100
-            });
-        });
-    }
+        constellation.forEach((pos, i) => {
+            memGrid.push({
+                x: pos.x, y: pos.y,
+                r: pos.r,
+                id: i,
+                seedX: Math.random() * 100, seedY: Math.random() * 100
+            });
+        });
+    }
 
-    const isInDetailView = overlay.classList.contains('active') && currentCanvas && currentCanvas.id === 'canvas-memoria';
-    const points = getActivePoints(mouse);
-   
-    let litOpacity = new Array(9).fill(0);
-    let colorMixTarget = new Array(9).fill(0);
-    let flashRgb = MEM_OK_RGB;
+    const isInDetailView = overlay.classList.contains('active') && currentCanvas && currentCanvas.id === 'canvas-memoria';
+    const points = getActivePoints(mouse);
+   
+    let litOpacity = new Array(9).fill(0);
+    let colorMixTarget = new Array(9).fill(0);
+    let flashRgb = MEM_OK_RGB;
 
-    if (!isInDetailView) {
-        // --- ESTADO BASE (EN LA GRILLA) ---
-        const frame = Math.floor(time * 60) % 320;
-       
-        // 1. Ilumina secuencialmente
-        if (frame > 20 && frame < 70) litOpacity[1] = Math.sin((frame - 20) / 50 * Math.PI);
-        if (frame > 80 && frame < 130) litOpacity[4] = Math.sin((frame - 80) / 50 * Math.PI);
-        if (frame > 140 && frame < 190) litOpacity[6] = Math.sin((frame - 140) / 50 * Math.PI);
-       
-        // 2. Fase final: Enciende TODOS los 9 círculos con su iluminación original (sin verde)
-        if (frame > 210 && frame < 290) {
-            let lit = 0;
-            if (frame < 230) lit = (frame - 210) / 20;
-            else if (frame > 270) lit = 1 - ((frame - 270) / 20);
-            else lit = 1;
-           
-            for (let i = 0; i < 9; i++) {
-                litOpacity[i] = Math.max(litOpacity[i] || 0, lit);
-                // Al no tocar colorMixTarget[i], mantienen el color azulado/grisáceo base
-            }
-        }
+    if (!isInDetailView) {
+        // --- ESTADO BASE (EN LA GRILLA) ---
+        const frame = Math.floor(time * 60) % 320;
+       
+        // 1. Ilumina secuencialmente
+        if (frame > 20 && frame < 70) litOpacity[1] = Math.sin((frame - 20) / 50 * Math.PI);
+        if (frame > 80 && frame < 130) litOpacity[4] = Math.sin((frame - 80) / 50 * Math.PI);
+        if (frame > 140 && frame < 190) litOpacity[6] = Math.sin((frame - 140) / 50 * Math.PI);
+       
+        // 2. Fase final: Enciende TODOS los 9 círculos con su iluminación original
+        if (frame > 210 && frame < 290) {
+            let lit = 0;
+            if (frame < 230) lit = (frame - 210) / 20;
+            else if (frame > 270) lit = 1 - ((frame - 270) / 20);
+            else lit = 1;
+           
+            for (let i = 0; i < 9; i++) {
+                litOpacity[i] = Math.max(litOpacity[i] || 0, lit);
+            }
+        }
 
-        if (memPhase !== 'idle') {
-            memPhase = 'idle';
-            memShowIdx = 0;
-            memInputIdx = 0;
-            memFlashTimer = 0;
-        }
+        if (memPhase !== 'idle') {
+            memPhase = 'idle';
+            memShowIdx = 0;
+            memInputIdx = 0;
+            memFlashTimer = 0;
+        }
 
-    } else {
-        // --- ESTADO INTERACTIVO (EN DETALLE) ---
-        if (memPhase === 'idle') {
-            if (points.length > 0) {
-                const touchedAny = points.some(pt => memGrid.some(g => Math.hypot(g.x - pt.x, g.y - pt.y) < g.r + 20));
-                if (touchedAny) {
-                    memPhase = 'showing';
-                    memShowIdx = 0; memShowTimer = 0; memShowSub = 'in';
-                }
-            }
-        } else if (memPhase === 'showing') {
-            const frameIds = memSequence[memShowIdx];
-            memShowTimer++;
+    } else {
+        // --- ESTADO INTERACTIVO (EN DETALLE) ---
+        if (memPhase === 'idle') {
+            if (points.length > 0) {
+                const touchedAny = points.some(pt => memGrid.some(g => Math.hypot(g.x - pt.x, g.y - pt.y) < g.r + 20));
+                if (touchedAny) {
+                    memPhase = 'showing';
+                    memShowIdx = 0; memShowTimer = 0; memShowSub = 'in';
+                }
+            }
+        } else if (memPhase === 'showing') {
+            const frameIds = memSequence[memShowIdx];
+            memShowTimer++;
 
-            let frac = 0;
-            if (memShowSub === 'in') {
-                frac = memSmoothstep(Math.min(1, memShowTimer / MEM_FADE_IN));
-                if (memShowTimer >= MEM_FADE_IN) { memShowSub = 'hold'; memShowTimer = 0; }
-            } else if (memShowSub === 'hold') {
-                frac = 1;
-                if (memShowTimer >= MEM_HOLD) { memShowSub = 'out'; memShowTimer = 0; }
-            } else if (memShowSub === 'out') {
-                frac = 1 - memSmoothstep(Math.min(1, memShowTimer / MEM_FADE_OUT));
-                if (memShowTimer >= MEM_FADE_OUT) { memShowSub = 'gap'; memShowTimer = 0; }
-            } else {
-                frac = 0;
-                if (memShowTimer >= MEM_GAP) {
-                    memShowTimer = 0;
-                    memShowSub = 'in';
-                    memShowIdx++;
-                    if (memShowIdx >= memSequence.length) {
-                        memShowIdx = 0;
-                        memPhase = 'input';
-                        memInputIdx = 0;
-                        memEpisodeOpen = false;
-                        memEpisodeHits = new Set();
-                    }
-                }
-            }
-            frameIds.forEach(id => { litOpacity[id] = frac; });
+            let frac = 0;
+            if (memShowSub === 'in') {
+                frac = memSmoothstep(Math.min(1, memShowTimer / MEM_FADE_IN));
+                if (memShowTimer >= MEM_FADE_IN) { memShowSub = 'hold'; memShowTimer = 0; }
+            } else if (memShowSub === 'hold') {
+                frac = 1;
+                if (memShowTimer >= MEM_HOLD) { memShowSub = 'out'; memShowTimer = 0; }
+            } else if (memShowSub === 'out') {
+                frac = 1 - memSmoothstep(Math.min(1, memShowTimer / MEM_FADE_OUT));
+                if (memShowTimer >= MEM_FADE_OUT) { memShowSub = 'gap'; memShowTimer = 0; }
+            } else {
+                frac = 0;
+                if (memShowTimer >= MEM_GAP) {
+                    memShowTimer = 0;
+                    memShowSub = 'in';
+                    memShowIdx++;
+                    if (memShowIdx >= memSequence.length) {
+                        memShowIdx = 0;
+                        memPhase = 'input';
+                        memInputIdx = 0;
+                        memEpisodeOpen = false;
+                        memEpisodeHits = new Set();
+                    }
+                }
+            }
+            frameIds.forEach(id => { litOpacity[id] = frac; });
 
-        } else if (memPhase === 'input') {
-            if (points.length > 0) {
-                if (!memEpisodeOpen) { memEpisodeOpen = true; memEpisodeHits = new Set(); }
-                points.forEach(pt => {
-                    const found = memGrid.find(g => Math.hypot(g.x - pt.x, g.y - pt.y) < g.r + 16);
-                    if (found) memEpisodeHits.add(found.id);
-                });
-                memEpisodeHits.forEach(id => { litOpacity[id] = 1; });
-            } else if (memEpisodeOpen) {
-                memEpisodeOpen = false;
-                const expected = new Set(memSequence[memInputIdx]);
-                const same = expected.size === memEpisodeHits.size &&
-                    [...expected].every(id => memEpisodeHits.has(id));
+        } else if (memPhase === 'input') {
+            if (points.length > 0) {
+                if (!memEpisodeOpen) { memEpisodeOpen = true; memEpisodeHits = new Set(); }
+                points.forEach(pt => {
+                    const found = memGrid.find(g => Math.hypot(g.x - pt.x, g.y - pt.y) < g.r + 16);
+                    if (found) memEpisodeHits.add(found.id);
+                });
+                memEpisodeHits.forEach(id => { litOpacity[id] = 1; });
+            } else if (memEpisodeOpen) {
+                memEpisodeOpen = false;
+                const expected = new Set(memSequence[memInputIdx]);
+                const same = expected.size === memEpisodeHits.size &&
+                    [...expected].every(id => memEpisodeHits.has(id));
 
-                if (!same) {
-                    memFlashIds = [...memSequence[memInputIdx]];
-                    memPhase = 'flash'; memFlashTimer = 0; memFlashOk = false;
-                } else {
-                    memInputIdx++;
-                    if (memInputIdx >= memSequence.length) {
-                        memFlashIds = memGrid.map(g => g.id);
-                        memPhase = 'flash'; memFlashTimer = 0; memFlashOk = true;
-                    }
-                }
-            }
-        } else if (memPhase === 'flash') {
-            memFlashTimer++;
-            memFlashIds.forEach(id => { litOpacity[id] = 1; });
-            if (memFlashTimer >= memFlashHold) {
-                if (memFlashOk) { memRound++; memSequence = memGenerateSequence(memRound); }
-                memShowIdx = 0; memShowTimer = 0; memShowSub = 'in';
-                memPhase = 'showing';
-            }
-        }
+                if (!same) {
+                    memFlashIds = [...memSequence[memInputIdx]];
+                    memPhase = 'flash'; memFlashTimer = 0; memFlashOk = false;
+                } else {
+                    memInputIdx++;
+                    if (memInputIdx >= memSequence.length) {
+                        memFlashIds = memGrid.map(g => g.id);
+                        memPhase = 'flash'; memFlashTimer = 0; memFlashOk = true;
+                    }
+                }
+            }
+        } else if (memPhase === 'flash') {
+            memFlashTimer++;
+            memFlashIds.forEach(id => { litOpacity[id] = 1; });
+            if (memFlashTimer >= memFlashHold) {
+                if (memFlashOk) { memRound++; memSequence = memGenerateSequence(memRound); }
+                memShowIdx = 0; memShowTimer = 0; memShowSub = 'in';
+                memPhase = 'showing';
+            }
+        }
 
-        const globalMixTarget = memPhase === 'flash' ? 1 : 0;
-        flashRgb = memFlashOk ? MEM_OK_RGB : MEM_FAIL_RGB;
-        memGrid.forEach(g => {
-            if (memPhase === 'flash' && memFlashIds.includes(g.id)) {
-                colorMixTarget[g.id] = globalMixTarget;
-            }
-        });
-    }
+        const globalMixTarget = memPhase === 'flash' ? 1 : 0;
+        flashRgb = memFlashOk ? MEM_OK_RGB : MEM_FAIL_RGB;
+        memGrid.forEach(g => {
+            if (memPhase === 'flash' && memFlashIds.includes(g.id)) {
+                colorMixTarget[g.id] = globalMixTarget;
+            }
+        });
+    }
 
-    // --- RENDERIZADO COMPARTIDO ---
-    memGrid.forEach(g => {
-        const orbitR = 9;
-        const orbitAngle = time * 0.9 + g.seedX;
-        const floatX = Math.cos(orbitAngle) * orbitR;
-        const floatY = Math.sin(orbitAngle) * orbitR;
-        const rx = g.x + floatX, ry = g.y + floatY;
+    // --- RENDERIZADO COMPARTIDO ---
+    memGrid.forEach(g => {
+        const orbitR = 9;
+        const orbitAngle = time * 0.9 + g.seedX;
+        const floatX = Math.cos(orbitAngle) * orbitR;
+        const floatY = Math.sin(orbitAngle) * orbitR;
+        const rx = g.x + floatX, ry = g.y + floatY;
 
-        memCircleLit[g.id] = lerp(memCircleLit[g.id], litOpacity[g.id], 0.09);
-        memCircleColorMix[g.id] = lerp(memCircleColorMix[g.id], colorMixTarget[g.id], 0.05);
+        memCircleLit[g.id] = lerp(memCircleLit[g.id], litOpacity[g.id], 0.09);
+        memCircleColorMix[g.id] = lerp(memCircleColorMix[g.id], colorMixTarget[g.id], 0.05);
 
-        const lit = memCircleLit[g.id];
-        const mix = memCircleColorMix[g.id];
-        const pulse = 1 + lit * 0.1;
+        const lit = memCircleLit[g.id];
+        const mix = memCircleColorMix[g.id];
+        const pulse = 1 + lit * 0.1;
 
-        const rC = lerp(MEM_BASE_RGB[0], flashRgb[0], mix);
-        const gC = lerp(MEM_BASE_RGB[1], flashRgb[1], mix);
-        const bC = lerp(MEM_BASE_RGB[2], flashRgb[2], mix);
-        const opa = 0.28 + lit * 0.67;
+        const rC = lerp(MEM_BASE_RGB[0], flashRgb[0], mix);
+        const gC = lerp(MEM_BASE_RGB[1], flashRgb[1], mix);
+        const bC = lerp(MEM_BASE_RGB[2], flashRgb[2], mix);
+        const opa = 0.28 + lit * 0.67;
 
-        ctx.fillStyle = `rgba(${rC.toFixed(1)}, ${gC.toFixed(1)}, ${bC.toFixed(1)}, ${opa})`;
-        ctx.beginPath(); ctx.arc(rx, ry, g.r * pulse, 0, Math.PI * 2); ctx.fill();
-    });
+        ctx.fillStyle = `rgba(${rC.toFixed(1)}, ${gC.toFixed(1)}, ${bC.toFixed(1)}, ${opa})`;
+        ctx.beginPath(); ctx.arc(rx, ry, g.r * pulse, 0, Math.PI * 2); ctx.fill();
+    });
 });
 
 // --- HERENCIA ---
@@ -621,7 +620,6 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
             let layerOpacity = coreOpacity - (nextLayer - 1) * 0.12; 
             let finalOpacity = Math.max(0.05, layerOpacity);
             
-            // Las capas expansivas SÍ desaparecen al terminar el ciclo
             if (nextLayer > 1) {
                 finalOpacity *= fade;
             }
@@ -642,12 +640,9 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
             let layerOpacity = coreOpacity - (i - 1) * 0.12; 
             let finalOpacity = Math.max(0.05, layerOpacity);
             
-            // ACÁ ESTÁ LA SOLUCIÓN:
             if (i > 1) {
-                // Las capas extra desaparecen con el fade
                 finalOpacity *= fade; 
             } else if (fade < 1) {
-                // El círculo base NUNCA desaparece. Retorna suavemente a su gris tenue (0.25)
                 finalOpacity = 0.25 + (finalOpacity - 0.25) * fade; 
             }
             
@@ -719,6 +714,7 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
             }
         }
 
+        // --- MÁQUINA DE ESTADOS ---
         if (node.state === 'vanishing') {
             node.progress -= 0.08; 
             if (node.progress <= 0) {
@@ -740,7 +736,6 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
             }
         }
         else if (node.state === 'reset_vanishing') {
-            // Animación lenta al desaparecer (antes era 0.08)
             node.progress -= 0.025; 
             if (node.progress <= 0) {
                 node.progress = 0;
@@ -750,7 +745,6 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
             }
         }
         else if (node.state === 'reset_growing') {
-            // Animación muy suave al volver a aparecer (antes era 0.04)
             node.progress += 0.015; 
             if (node.progress >= 1) {
                 node.progress = 1;
@@ -758,10 +752,14 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
             }
         }
 
+        // 1. Movimiento leve en su propio lugar
         let floatX = Math.cos(time * 0.8 + node.seed) * 2.5;
         let floatY = Math.sin(time * 0.8 + node.seed * 1.5) * 2.5;
+        
+        // 2. Achicamiento pronunciado (respiración)
         let sizePulse = 0.75 + Math.sin(time * node.pulseSpeed + node.pulseOffset) * 0.25;
         
+        // 3. Parpadeo leve de opacidad
         let alphaMult = 1.0;
         if (node.isFlickering) {
             let pulse = (Math.sin(time * node.flickerSpeed + node.flickerOffset) + 1) / 2;
@@ -786,8 +784,8 @@ let idRotSpeed = 0;
 let idDragPrevAngle = null;
 let idCenterSize = 18; 
 let currentSquareSizes = [32, 32, 32, 32, 32, 32, 32, 32];
-let idOuterBobAmp = 0;   // Amplitud actual del vaivén vertical de los cuadrados orbitantes
-let idCenterBobAmp = 0;  // Amplitud actual del vaivén vertical del cuadrado central
+let idOuterBobAmp = 0; 
+let idCenterBobAmp = 0;
 
 initCanvas('canvas-identidad', (ctx, size, mouse, time) => {
     const cx = size / 2, cy = size / 2;
@@ -812,8 +810,6 @@ initCanvas('canvas-identidad', (ctx, size, mouse, time) => {
     const targetCenterSize = 18 + Math.min(idRotSpeed, 3) * 26;
     idCenterSize = lerp(idCenterSize, targetCenterSize, 0.1);
 
-    // Vaivén vertical orgánico y reducido: los orbitantes se mueven solo en reposo,
-    // el cuadrado central solo se mueve mientras el usuario interactúa
     const OUTER_BOB_AMPLITUDE = 8;
     const CENTER_BOB_AMPLITUDE = 8;
     idOuterBobAmp = lerp(idOuterBobAmp, pointer ? 0 : OUTER_BOB_AMPLITUDE, 0.06);
@@ -823,7 +819,7 @@ initCanvas('canvas-identidad', (ctx, size, mouse, time) => {
     for (let i = 0; i < 8; i++) {
         const angle = (i * Math.PI) / 4 + idRotation;
         const nx = cx + Math.cos(angle) * 100;
-        const bobY = Math.sin(time * 0.9 + i * 0.85) * idOuterBobAmp; // fase distinta por nodo = orgánico
+        const bobY = Math.sin(time * 0.9 + i * 0.85) * idOuterBobAmp; 
         const ny = cy + Math.sin(angle) * 100 + bobY;
         let baseSize;
         if (i === 2 || i === 6) baseSize = 60;
@@ -843,13 +839,11 @@ initCanvas('canvas-identidad', (ctx, size, mouse, time) => {
     ctx.closePath();
     ctx.stroke();
 
-    // Orbitantes SIEMPRE rellenos 
     ctx.fillStyle = 'rgba(186, 196, 191, 0.9)';
     nodes.forEach(node => { 
         ctx.fillRect(node.x - node.size / 2, node.y - node.size / 2, node.size, node.size); 
     });
 
-    // Cuadrado Central: empieza como línea, se rellena de color al interactuar
     const centerY = cy + Math.sin(time * 0.9) * idCenterBobAmp;
     ctx.strokeStyle = '#7a9282';
     ctx.lineWidth = 3;
@@ -877,8 +871,9 @@ let empDragMap = new Map();
 let empBigOutlineMode = 0; 
 
 initCanvas('canvas-empatia', (ctx, size, mouse, time) => {
-    // RGB ajustado para que al 60% de opacidad se vea exactamente como #C1CAC5
     const verdeIdentidad = '152, 167, 158'; 
+    const colorLineaIdentidad = '132, 156, 139';
+    const colorBordeIdentidad = '#a6bda9'; 
 
     const points = getActivePoints(mouse);
     const activeIds = new Set();
@@ -950,24 +945,13 @@ initCanvas('canvas-empatia', (ctx, size, mouse, time) => {
         }
     });
 
+    // 1. CALCULAMOS TAMAÑOS Y OPACIDADES PRIMERO
     const closenessOf = (s) => Math.max(0, 1 - Math.hypot(s.pos.x - p1.x, s.pos.y - p1.y) / 150);
     const closenessA = closenessOf(empSmalls[0]);
     const closenessB = closenessOf(empSmalls[1]);
     const overallCloseness = Math.max(closenessA, closenessB);
 
     const sizeP1 = 42 + overallCloseness * 10;
-
-    // --- Línea de conexión: Vuelven a estar siempre visibles ---
-    empSmalls.forEach((s) => {
-        const dLine = Math.hypot(s.pos.x - p1.x, s.pos.y - p1.y);
-        const closeness = closenessOf(s);
-        ctx.fillStyle = `rgba(${verdeIdentidad}, ${0.25 + closeness * 0.2})`;
-        ctx.save();
-        ctx.translate(p1.x, p1.y);
-        ctx.rotate(Math.atan2(s.pos.y - p1.y, s.pos.x - p1.x));
-        ctx.fillRect(0, -2, dLine, 4);
-        ctx.restore();
-    });
 
     let bigNearSmall = false;
     empSmalls.forEach((s) => {
@@ -986,8 +970,38 @@ initCanvas('canvas-empatia', (ctx, size, mouse, time) => {
     const outlineTarget = (empBig.dragging && bigNearSmall) ? 1 : 0;
     empBigOutlineMode = lerp(empBigOutlineMode, outlineTarget, 0.15);
 
-    // CUADRADO GRANDE
     const bigFillAlpha = (0.6 + overallCloseness * 0.4) * (1 - empBigOutlineMode);
+
+    // 2. DIBUJAMOS LÍNEAS
+    const lineAlpha = empBig.dragging ? 0.15 : 0.35; 
+
+    empSmalls.forEach((s) => {
+        const dx = s.pos.x - p1.x;
+        const dy = s.pos.y - p1.y;
+        const dLine = Math.hypot(dx, dy);
+        const angle = Math.atan2(dy, dx);
+        
+        const maxCosSin = Math.max(Math.abs(Math.cos(angle)), Math.abs(Math.sin(angle)));
+        
+        const startOffset = (sizeP1 / maxCosSin) - 1.5; 
+        const lineLength = Math.max(0, dLine - startOffset);
+
+        if (lineLength > 0 && dLine > startOffset) {
+            ctx.strokeStyle = `rgba(${colorLineaIdentidad}, ${lineAlpha})`;
+            ctx.lineWidth = 2;
+            
+            ctx.save();
+            ctx.translate(p1.x, p1.y);
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.moveTo(startOffset, 0);
+            ctx.lineTo(startOffset + lineLength, 0);
+            ctx.stroke();
+            ctx.restore();
+        }
+    });
+
+    // 3. DIBUJAMOS CUADRADO GRANDE
     if (bigFillAlpha > 0.01) {
         ctx.fillStyle = `rgba(${verdeIdentidad}, ${bigFillAlpha})`;
         ctx.fillRect(p1.x - sizeP1, p1.y - sizeP1, sizeP1 * 2, sizeP1 * 2);
@@ -995,15 +1009,15 @@ initCanvas('canvas-empatia', (ctx, size, mouse, time) => {
 
     const bigStrokeWidth = empBigOutlineMode * 3;
     if (bigStrokeWidth > 0.05) {
-        ctx.strokeStyle = '#a6bda9';
+        ctx.strokeStyle = colorBordeIdentidad;
         ctx.lineWidth = bigStrokeWidth;
         ctx.strokeRect(p1.x - sizeP1, p1.y - sizeP1, sizeP1 * 2, sizeP1 * 2);
     }
 
-    // CUADRADOS CHICOS
+    // 4. DIBUJAMOS CUADRADOS CHICOS
     empSmalls.forEach((s) => {
         const sizeP2 = s.sizeP2;
-        ctx.strokeStyle = '#a6bda9';
+        ctx.strokeStyle = colorBordeIdentidad;
         ctx.lineWidth = 3;
         ctx.strokeRect(s.pos.x - sizeP2, s.pos.y - sizeP2, sizeP2 * 2, sizeP2 * 2);
 
@@ -1014,7 +1028,7 @@ initCanvas('canvas-empatia', (ctx, size, mouse, time) => {
 
 // --- COLABORACIÓN ---
 let cNodes = Array.from({length: 16}, (_, i) => {
-    let isCore = (i % 3 === 0); // Selecciona 6 nodos clave
+    let isCore = (i % 3 === 0); 
     return {
         x: 100 + (i % 4) * 65, y: 100 + Math.floor(i / 4) * 65,
         ox: 100 + (i % 4) * 65, oy: 100 + Math.floor(i / 4) * 65,
@@ -1029,7 +1043,6 @@ let collabCapacity = 6;
 let collabMaxConnections = 0;
 
 initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
-    // Puntos de interacción activos
     let points = [];
     if (mouse.touches.length > 0) {
         points = mouse.touches;
@@ -1038,12 +1051,10 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
     }
 
     // --- LÓGICA DE FUSIÓN PERSISTENTE ---
-    // Si levantamos todos los dedos, se resetea todo al estado base
     if (points.length === 0) {
         collabCapacity = 6;
         collabMaxConnections = 0;
     } else {
-        // Contamos cuántas conexiones (cruces de dedos) hay activas ahora mismo
         let currentConnections = 0;
         for (let i = 0; i < points.length; i++) {
             for (let j = i + 1; j < points.length; j++) {
@@ -1053,34 +1064,30 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
             }
         }
 
-        // Si hay nuevas conexiones (juntamos dedos), aumentamos la capacidad máxima global (hasta 18)
         if (currentConnections > collabMaxConnections) {
             let newMerges = currentConnections - collabMaxConnections;
             collabCapacity = Math.min(18, collabCapacity + (newMerges * 6));
             collabMaxConnections = currentConnections;
         } 
-        // Si soltamos un dedo, actualizamos el tope, pero NO perdemos la capacidad ganada
         else if (currentConnections < collabMaxConnections) {
             collabMaxConnections = currentConnections; 
         }
     }
 
-    // 1. Asignación de cupos (cada dedo tiene la capacidad máxima ganada hasta el momento)
+    // 1. Asignación de cupos 
     let targets = points.map(pt => ({ x: pt.x, y: pt.y, count: 0, max: collabCapacity }));
     let nodeTargets = new Array(cNodes.length).fill(null);
     let pairings = [];
 
-    // Medimos las distancias
     cNodes.forEach((node, nIdx) => {
         targets.forEach((target, tIdx) => {
             let dist = Math.hypot(target.x - node.x, target.y - node.y);
-            if (dist < 220) { // Radio de atracción para que reaccionen de lejos
+            if (dist < 220) { 
                 pairings.push({ nIdx, tIdx, dist });
             }
         });
     });
 
-    // Ordenamos de menor a mayor distancia para atrapar primero a los más cercanos
     pairings.sort((a, b) => a.dist - b.dist);
 
     pairings.forEach(pair => {
@@ -1101,7 +1108,6 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
             p.x = lerp(p.x, target.x, 0.08); 
             p.y = lerp(p.y, target.y, 0.08); 
         } else { 
-            // Si el nodo quedó libre (cupos llenos), vuelve a flotar en su lugar
             p.x = lerp(p.x, autoX, 0.1); 
             p.y = lerp(p.y, autoY, 0.1); 
         }
@@ -1136,15 +1142,12 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
 
     // 4. Dibujamos los cuadrados aplicando el crecimiento y relleno
     cNodes.forEach(p => { 
-        // Dividimos por 18.0 para exigir máxima colaboración antes de cerrarse
         let targetBonus = Math.min(1, p.weight / 18.0); 
         
         let baseFill = p.isCore ? 0.4 : 0;
         let baseSize = p.isCore ? 14 : 10;
         
         let finalFill = baseFill + targetBonus * (1 - baseFill);
-        
-        // Crecimiento al unirse
         let finalSize = baseSize + (targetBonus * baseSize * 1.5); 
         
         p.fillLevel = lerp(p.fillLevel, finalFill, 0.15);
@@ -1165,7 +1168,7 @@ initCanvas('canvas-colaboracion', (ctx, size, mouse, time) => {
 
 // --- INCERTIDUMBRE ---
 let clones = [];
-const UNCERT_COUNT = 18; // 9 antihorario (left) + 9 horario (right, sin tocar su lógica)
+const UNCERT_COUNT = 18; 
 const UNCERT_SMALL_R = 18;   
 const UNCERT_TAP_R = 34;     
 const UNCERT_ARM_DIST = 45;  
@@ -1175,11 +1178,11 @@ let uncertResetTimer = 0;
 let uncertLastPointer = null;   
 const UNCERT_DRAG_THRESHOLD = 2.5; 
 
-// --- NUEVO: sistema de líneas-vectores (se arma al clickear los 9 triángulos antihorarios) ---
-let uncertLeftClickCount = 0;      // cuántos triángulos antihorarios (izquierda) fueron clickeados (0 a 9)
-let uncertLineOpacityCurrent = 0;  // opacidad suavizada del borde de las líneas
-let uncertFillOpacityCurrent = 0;  // opacidad suavizada del relleno del triángulo grande
-const UNCERT_FLEE_RADIUS = 75;     // Ajustado para que el área de repulsión acompañe al nuevo radio
+// --- Sistema de líneas-vectores (se arma al clickear los 9 triángulos antihorarios) ---
+let uncertLeftClickCount = 0;      
+let uncertLineOpacityCurrent = 0;  
+let uncertFillOpacityCurrent = 0;  
+const UNCERT_FLEE_RADIUS = 75;     
 const UNCERT_FLEE_STRENGTH = 2.4;  
 
 const makeUncertClones = (size) => {
@@ -1192,7 +1195,6 @@ const makeUncertClones = (size) => {
             orbitProgress: 0,
             orbitDir: group === 'right' ? 1 : -1,           
             orbitSpeed: group === 'right' ? 0.018 : 0.0035,  
-            // CAMBIO AQUÍ: Bajamos el radio base de 125 a 75 para acercarlos al centro
             radius: 75 + (i % 3) * 14,               
             jitter: 5 + Math.random() * 5,
             driftOffset: Math.random() * Math.PI * 2,
@@ -1276,7 +1278,6 @@ initCanvas('canvas-incertidumbre', (ctx, size, mouse, time) => {
                 c.collected = true;
                 c.travel = 0;
                 if (c.group === 'left') {
-                    // Cada triángulo antihorario clickeado suma al progreso del triángulo grande y sus líneas-vector
                     uncertLeftClickCount = Math.min(9, uncertLeftClickCount + 1);
                 }
             }
@@ -1306,16 +1307,10 @@ initCanvas('canvas-incertidumbre', (ctx, size, mouse, time) => {
         uncertResetTimer = 0;
     }
 
-    // --- TABLA DE OPACIDADES POR CANTIDAD DE TRIÁNGULOS ANTIHORARIOS CLICKEADOS (0 a 9) ---
-    // Clicks 1, 2 y 3: van apareciendo las líneas 1, 2 y 3 (una por click), borde fijo en 10%
-    // Clicks 4, 5, 6: el borde (las líneas) sube a 20%, 40%, 60%
-    // Clicks 7, 8, 9: el borde sigue subiendo (80%, 100%) y AHORA también sube el relleno del
-    //                 triángulo grande (30%, 60%, 100%)
     const UNCERT_BORDER_OPACITY_STEPS = [0, 0.10, 0.10, 0.10, 0.20, 0.40, 0.60, 0.80, 1.00, 1.00];
     const UNCERT_FILL_OPACITY_STEPS   = [0, 0,    0,    0,    0,    0,    0,    0.30, 0.60, 1.00];
 
-    // --- CAPA 1: TRIÁNGULO GRANDE (SIN BORDE PROPIO — el borde lo generan las líneas) ---
-    // Usa la misma paleta de color que los triángulos chicos que orbitan (violeta/gris), sin verde.
+    // --- CAPA 1: TRIÁNGULO GRANDE ---
     const uncertFillTarget = UNCERT_FILL_OPACITY_STEPS[uncertLeftClickCount];
     uncertFillOpacityCurrent = lerp(uncertFillOpacityCurrent, uncertFillTarget, 0.08);
     if (uncertFillOpacityCurrent > 0.01) {
@@ -1323,18 +1318,12 @@ initCanvas('canvas-incertidumbre', (ctx, size, mouse, time) => {
         drawSolidTriangle(ctx, size / 2, size / 2, 55, centerPos.rot);
     }
 
-    // --- CAPA 2: LAS 3 LÍNEAS-VECTOR, dibujadas arriba del triángulo grande ---
-    // 1er click antihorario -> aparece la línea 1 (un lado del triángulo grande)
-    // 2do click antihorario -> aparece la línea 2 (el siguiente lado, conectando con el extremo anterior)
-    // 3er click antihorario -> aparece la línea 3, cerrando el recorrido y coincidiendo con el punto de partida
-    // Al usar directamente los vértices del triángulo grande (bigVerts) cada frame, las líneas
-    // siempre coinciden exactamente con sus extremos y rotan junto con él.
+    // --- CAPA 2: LÍNEAS-VECTOR ---
     const uncertLinesToShow = Math.min(3, uncertLeftClickCount);
     const uncertLineOpacityTarget = UNCERT_BORDER_OPACITY_STEPS[uncertLeftClickCount];
     uncertLineOpacityCurrent = lerp(uncertLineOpacityCurrent, uncertLineOpacityTarget, 0.08);
 
     if (uncertLinesToShow > 0 && uncertLineOpacityCurrent > 0.005) {
-        // Mismo color de borde que los triángulos chicos que orbitan, y mismo grosor (2px)
         ctx.strokeStyle = `rgba(141, 132, 156, ${uncertLineOpacityCurrent})`;
         ctx.lineWidth = 2;
         for (let i = 0; i < uncertLinesToShow; i++) {
@@ -1351,7 +1340,6 @@ initCanvas('canvas-incertidumbre', (ctx, size, mouse, time) => {
         makeUncertClones(size); 
         uncertResetTimer = 0;
         centerPos.opacity = 0;
-        // Reiniciamos también toda la lógica de las líneas-vector
         uncertLeftClickCount = 0;
         uncertLineOpacityCurrent = 0;
         uncertFillOpacityCurrent = 0;
@@ -1365,7 +1353,6 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
     const cx = size / 2;
     const cy = size / 2;
 
-    // Detectar si estamos interactuando en la vista de detalle
     const isInDetailView = overlay.classList.contains('active') && currentCanvas && currentCanvas.id === 'canvas-expectativa';
 
     // 1. Detectar número de dedos táctiles o click activo
@@ -1378,7 +1365,6 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
         activeTouchesCount = activeKeys.size;
     }
 
-    // Mínimo 6 triángulos pequeños
     const totalTrianglesNeeded = 6 + (activeTouchesCount * 6);
 
     while (expAmbientTriangles.length < totalTrianglesNeeded) {
@@ -1420,10 +1406,8 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
         ctx.translate(x, y);
         ctx.rotate(tri.rotation);
 
-        // Opacidad general fijada al 90%
         ctx.globalAlpha = 0.90;
 
-        // Borde simétrico y sin relleno
         ctx.strokeStyle = `rgb(122, 113, 140)`;
         ctx.lineWidth = 2.2;
 
@@ -1437,7 +1421,7 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
         }
         ctx.closePath();
 
-        ctx.stroke(); // Únicamente dibujamos el contorno
+        ctx.stroke(); 
 
         ctx.restore();
     });
@@ -1478,148 +1462,136 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
 });
 
 // --- ANSIEDAD ---
-// 9 triángulos grandes con gran amplitud de parpadeo (de muy claro a casi sólido)
 let ansNodes = Array.from({length: 9}, (_, i) => ({
-    x: 120 + (i % 3) * 80 + Math.random() * 20,
-    y: 120 + Math.floor(i / 3) * 80 + Math.random() * 20,
-    vx: (Math.random() - 0.5) * 0.5,
-    vy: (Math.random() - 0.5) * 0.5,
-    angle: Math.random() * Math.PI * 2,
-    baseRadius: 22,
-    flickerOffset: Math.random() * Math.PI * 2,
-    flickerSpeed: 0.8 + Math.random() * 0.6
+    x: 120 + (i % 3) * 80 + Math.random() * 20,
+    y: 120 + Math.floor(i / 3) * 80 + Math.random() * 20,
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: (Math.random() - 0.5) * 0.5,
+    angle: Math.random() * Math.PI * 2,
+    baseRadius: 22,
+    flickerOffset: Math.random() * Math.PI * 2,
+    flickerSpeed: 0.8 + Math.random() * 0.6
 }));
 
 let ansState = {
-    inactivityTimer: null,
-    lastClickTime: 0,
-    clickCount: 0,
-    targetSpeedMult: 1.0,
-    currentSpeedMult: 1.0,
-    targetSizeMult: 1.0,
-    currentSizeMult: 1.0
+    inactivityTimer: null,
+    lastClickTime: 0,
+    clickCount: 0,
+    targetSpeedMult: 1.0,
+    currentSpeedMult: 1.0,
+    targetSizeMult: 1.0,
+    currentSizeMult: 1.0
 };
 
 const triggerAnsiedadInteraction = () => {
-    const now = Date.now();
+    const now = Date.now();
 
-    // Reducción de tamaño instantánea
-    ansState.targetSizeMult = 0.5;
+    ansState.targetSizeMult = 0.5;
 
-    // Cooldown de 0.5 segundos (500 ms) entre clics
-    if (now - ansState.lastClickTime >= 500) {
-        ansState.lastClickTime = now;
-       
-        if (ansState.clickCount < 5) {
-            ansState.clickCount++;
-            ansState.targetSpeedMult = 1.0 + (ansState.clickCount * 2.2);
-        }
-    }
+    if (now - ansState.lastClickTime >= 500) {
+        ansState.lastClickTime = now;
+       
+        if (ansState.clickCount < 5) {
+            ansState.clickCount++;
+            ansState.targetSpeedMult = 1.0 + (ansState.clickCount * 2.2);
+        }
+    }
 
-    // Reiniciar temporizador de 5 segundos de inactividad
-    if (ansState.inactivityTimer) clearTimeout(ansState.inactivityTimer);
-    ansState.inactivityTimer = setTimeout(() => {
-        ansState.clickCount = 0;
-        ansState.targetSpeedMult = 1.0;
-        ansState.targetSizeMult = 1.0;
-    }, 5000);
+    if (ansState.inactivityTimer) clearTimeout(ansState.inactivityTimer);
+    ansState.inactivityTimer = setTimeout(() => {
+        ansState.clickCount = 0;
+        ansState.targetSpeedMult = 1.0;
+        ansState.targetSizeMult = 1.0;
+    }, 5000);
 };
 
 initCanvas('canvas-ansiedad', (ctx, size, mouse, time) => {
-    // Transición ultra suave de velocidad y tamaño
-    ansState.currentSpeedMult = lerp(ansState.currentSpeedMult, ansState.targetSpeedMult, 0.015);
-    ansState.currentSizeMult = lerp(ansState.currentSizeMult, ansState.targetSizeMult, 0.03);
+    ansState.currentSpeedMult = lerp(ansState.currentSpeedMult, ansState.targetSpeedMult, 0.015);
+    ansState.currentSizeMult = lerp(ansState.currentSizeMult, ansState.targetSizeMult, 0.03);
 
-    const points = getActivePoints(mouse);
-    const pointer = points.length > 0 ? points[0] : (mouse.inside ? { x: mouse.x, y: mouse.y } : null);
+    const points = getActivePoints(mouse);
+    const pointer = points.length > 0 ? points[0] : (mouse.inside ? { x: mouse.x, y: mouse.y } : null);
 
-    // Margen delimitador
-    const padding = lerp(85, 35, (ansState.currentSpeedMult - 1) / 10);
+    const padding = lerp(85, 35, (ansState.currentSpeedMult - 1) / 10);
+    const interactionRatio = ansState.clickCount / 5;
 
-    // Nivel de interacción de 0 a 1 (alcanza el 100% al 5to clic)
-    const interactionRatio = ansState.clickCount / 5;
+    ansNodes.forEach((p, i) => {
+        // 1. Repulsión entre los propios triángulos
+        for (let j = i + 1; j < ansNodes.length; j++) {
+            const other = ansNodes[j];
+            const dx = other.x - p.x;
+            const dy = other.y - p.y;
+            const dist = Math.hypot(dx, dy);
+            const minDist = (p.baseRadius + other.baseRadius) * ansState.currentSizeMult * 1.8;
 
-    ansNodes.forEach((p, i) => {
-        // 1. Repulsión entre los propios triángulos
-        for (let j = i + 1; j < ansNodes.length; j++) {
-            const other = ansNodes[j];
-            const dx = other.x - p.x;
-            const dy = other.y - p.y;
-            const dist = Math.hypot(dx, dy);
-            const minDist = (p.baseRadius + other.baseRadius) * ansState.currentSizeMult * 1.8;
+            if (dist < minDist && dist > 0.001) {
+                const force = (minDist - dist) * 0.02;
+                p.vx -= (dx / dist) * force;
+                p.vy -= (dy / dist) * force;
+                other.vx += (dx / dist) * force;
+                other.vy += (dy / dist) * force;
+            }
+        }
 
-            if (dist < minDist && dist > 0.001) {
-                const force = (minDist - dist) * 0.02;
-                p.vx -= (dx / dist) * force;
-                p.vy -= (dy / dist) * force;
-                other.vx += (dx / dist) * force;
-                other.vy += (dy / dist) * force;
-            }
-        }
+        // 2. Repulsión respecto al puntero/mouse
+        if (pointer) {
+            const dx = p.x - pointer.x;
+            const dy = p.y - pointer.y;
+            const dist = Math.hypot(dx, dy);
+            const fleeRadius = 120;
 
-        // 2. Repulsión respecto al puntero/mouse
-        if (pointer) {
-            const dx = p.x - pointer.x;
-            const dy = p.y - pointer.y;
-            const dist = Math.hypot(dx, dy);
-            const fleeRadius = 120;
+            if (dist < fleeRadius && dist > 0.001) {
+                const force = (1 - dist / fleeRadius) * 2.5 * ansState.currentSpeedMult;
+                p.vx += (dx / dist) * force;
+                p.vy += (dy / dist) * force;
+            }
+        }
 
-            if (dist < fleeRadius && dist > 0.001) {
-                const force = (1 - dist / fleeRadius) * 2.5 * ansState.currentSpeedMult;
-                p.vx += (dx / dist) * force;
-                p.vy += (dy / dist) * force;
-            }
-        }
+        // 3. Movimiento caótico base
+        p.vx += (Math.random() - 0.5) * 0.7 * ansState.currentSpeedMult;
+        p.vy += (Math.random() - 0.5) * 0.7 * ansState.currentSpeedMult;
+        p.vx *= 0.92;
+        p.vy *= 0.92;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.angle += Math.hypot(p.vx, p.vy) * 0.02;
 
-        // 3. Movimiento caótico base
-        p.vx += (Math.random() - 0.5) * 0.7 * ansState.currentSpeedMult;
-        p.vy += (Math.random() - 0.5) * 0.7 * ansState.currentSpeedMult;
-        p.vx *= 0.92;
-        p.vy *= 0.92;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.angle += Math.hypot(p.vx, p.vy) * 0.02;
+        // 4. Paredes delimitadoras
+        if (p.x < padding) { p.x = padding; p.vx *= -0.8; }
+        if (p.x > size - padding) { p.x = size - padding; p.vx *= -0.8; }
+        if (p.y < padding) { p.y = padding; p.vy *= -0.8; }
+        if (p.y > size - padding) { p.y = size - padding; p.vy *= -0.8; }
 
-        // 4. Paredes delimitadoras
-        if (p.x < padding) { p.x = padding; p.vx *= -0.8; }
-        if (p.x > size - padding) { p.x = size - padding; p.vx *= -0.8; }
-        if (p.y < padding) { p.y = padding; p.vy *= -0.8; }
-        if (p.y > size - padding) { p.y = size - padding; p.vy *= -0.8; }
+        // 5. Parpadeo amplio
+        const pulse = (Math.sin(time * p.flickerSpeed + p.flickerOffset) + 1) / 2;
+        const baseFillAlpha = lerp(0.0, 0.60, pulse);
+       
+        const fillAlpha = Math.min(0.98, lerp(baseFillAlpha, 0.98, interactionRatio));
 
-        // 5. Parpadeo amplio: desciende a opacidad muy baja (0.08) y sube hasta alta opacidad (0.90)
-        const pulse = (Math.sin(time * p.flickerSpeed + p.flickerOffset) + 1) / 2;
-        const baseFillAlpha = lerp(0.0, 0.60, pulse);
-       
-        // Al interactuar (alcanzando el 5to clic), el relleno se vuelve totalmente sólido (0.98)
-        const fillAlpha = Math.min(0.98, lerp(baseFillAlpha, 0.98, interactionRatio));
+        const r = p.baseRadius * ansState.currentSizeMult;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
 
-        // Geometría del triángulo
-        const r = p.baseRadius * ansState.currentSizeMult;
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.angle);
+        ctx.beginPath();
+        for (let k = 0; k < 3; k++) {
+            const a = (k * 2 * Math.PI) / 3;
+            const tx = Math.cos(a) * r;
+            const ty = Math.sin(a) * r;
+            if (k === 0) ctx.moveTo(tx, ty);
+            else ctx.lineTo(tx, ty);
+        }
+        ctx.closePath();
 
-        ctx.beginPath();
-        for (let k = 0; k < 3; k++) {
-            const a = (k * 2 * Math.PI) / 3;
-            const tx = Math.cos(a) * r;
-            const ty = Math.sin(a) * r;
-            if (k === 0) ctx.moveTo(tx, ty);
-            else ctx.lineTo(tx, ty);
-        }
-        ctx.closePath();
+        ctx.fillStyle = `rgba(141, 132, 156, ${fillAlpha})`;
+        ctx.fill();
 
-        // Relleno oscilante entre casi transparente y muy oscuro
-        ctx.fillStyle = `rgba(141, 132, 156, ${fillAlpha})`;
-        ctx.fill();
+        ctx.strokeStyle = 'rgba(141, 132, 156, 0.8)';
+        ctx.lineWidth = 1.8;
+        ctx.shadowColor = 'rgba(141, 132, 156, 0.4)';
+        ctx.shadowBlur = 4;
+        ctx.stroke();
 
-        // Líneas fijas
-        ctx.strokeStyle = 'rgba(141, 132, 156, 0.8)';
-        ctx.lineWidth = 1.8;
-        ctx.shadowColor = 'rgba(141, 132, 156, 0.4)';
-        ctx.shadowBlur = 4;
-        ctx.stroke();
-
-        ctx.restore();
-    });
+        ctx.restore();
+    });
 }, null, triggerAnsiedadInteraction);
