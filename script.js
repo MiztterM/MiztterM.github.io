@@ -667,15 +667,16 @@ let cadRespawnCount = 0; // Contador global de desapariciones
 
 initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
     if (cadNodes.length === 0) {
-        const cy = size / 2;
-        // 6 círculos ordenados en línea horizontal con sutiles desfasajes en Y
+        // Coordenadas absolutas y tamaños compensados para igualar el peso de Memoria
         const layout = [
-            { x: size * 0.20, y: cy + 4,  r: 14, baseAlpha: 0.50 },
-            { x: size * 0.32, y: cy - 8,  r: 18, baseAlpha: 0.70 },
-            { x: size * 0.44, y: cy + 6,  r: 12, baseAlpha: 0.45 },
-            { x: size * 0.56, y: cy - 4,  r: 20, baseAlpha: 0.85 },
-            { x: size * 0.68, y: cy + 10, r: 15, baseAlpha: 0.60 },
-            { x: size * 0.80, y: cy - 6,  r: 10, baseAlpha: 0.35 }
+            { x: 90,  y: 205, r: 12, baseAlpha: 0.50 }, // Extremo izquierdo
+            { x: 125, y: 165, r: 18, baseAlpha: 0.70 }, // Arriba centro-izq
+            { x: 140, y: 250, r: 34, baseAlpha: 0.85 }, // Abajo izq (Grande)
+            { x: 190, y: 200, r: 26, baseAlpha: 0.80 }, // Centro
+            { x: 220, y: 255, r: 9,  baseAlpha: 0.40 }, // Abajo centro-der (Pequeñito)
+            { x: 245, y: 145, r: 31, baseAlpha: 0.85 }, // Arriba derecha (Grande)
+            { x: 280, y: 225, r: 18, baseAlpha: 0.65 }, // Medio derecha
+            { x: 310, y: 185, r: 12, baseAlpha: 0.40 }  // Extremo derecho
         ];
 
         layout.forEach((pos, idx) => {
@@ -683,14 +684,12 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
                 ox: pos.x, oy: pos.y,
                 baseSize: pos.r,
                 baseAlpha: pos.baseAlpha,
-                state: 'idle',  // Estados: 'idle', 'vanishing', 'growing'
-                progress: 1,    // 1 = tamaño completo, 0 = invisible
+                state: 'idle',  
+                progress: 1,    
                 seed: Math.random() * 100,
-                // Parpadeo leve constante en 2 círculos
-                isFlickering: idx === 1 || idx === 3,
+                isFlickering: idx === 2 || idx === 5 || idx === 7,
                 flickerSpeed: 1.2 + Math.random() * 0.8,
                 flickerOffset: Math.random() * Math.PI * 2,
-                // Parámetros para respiración gradual de tamaño
                 pulseSpeed: 1.0 + Math.random() * 0.5,
                 pulseOffset: Math.random() * Math.PI * 2
             });
@@ -714,7 +713,7 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
             if (node.progress <= 0) {
                 node.progress = 0;
                 node.state = 'growing';
-                cadRespawnCount++; // Sumamos 1 al contador global
+                cadRespawnCount++; 
                 
                 const margin = 40;
                 node.ox = margin + Math.random() * (size - margin * 2);
@@ -731,11 +730,11 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
             }
         }
 
-        // 1. Movimiento leve en su propio lugar (flotación en X e Y)
+        // 1. Movimiento leve en su propio lugar
         let floatX = Math.cos(time * 0.8 + node.seed) * 2.5;
         let floatY = Math.sin(time * 0.8 + node.seed * 1.5) * 2.5;
 
-        // 2. Achicamiento más pronunciado (oscila de 50% hasta 100% de su tamaño base)
+        // 2. Achicamiento pronunciado (respiración compensada por el mayor radio base)
         let sizePulse = 0.75 + Math.sin(time * node.pulseSpeed + node.pulseOffset) * 0.25;
 
         // 3. Parpadeo leve de opacidad
@@ -845,82 +844,151 @@ initCanvas('canvas-identidad', (ctx, size, mouse, time) => {
 });
 
 // --- EMPATÍA ---
-let empFillLevel = 0.08; // Para que el color aparezca y desaparezca suavemente
-let empSmallPos = null;  // Posición actual del cuadrado pequeño (orbitando o arrastrado)
-let empIsDragging = false;
+let empBig = { pos: null, dragging: false };
+let empSmalls = [
+    { pos: null, dragging: false, phase: 0, fillLevel: 0.08 },
+    { pos: null, dragging: false, phase: Math.PI, fillLevel: 0.08 }
+];
+let empDragMap = new Map(); 
+let empBigOutlineMode = 0; 
 
 initCanvas('canvas-empatia', (ctx, size, mouse, time) => {
-    // CUADRADO GRANDE (P1): centrado horizontalmente, con movimiento de órbita arriba/abajo (base del código anterior)
-    let p1 = { x: size / 2, y: size / 2 + Math.sin(time) * 15 };
+    // RGB ajustado para que al 60% de opacidad se vea exactamente como #C1CAC5
+    const verdeIdentidad = '152, 167, 158'; 
 
-    // Solo hay "pointer" si hay click sostenido o un touch activo
     const points = getActivePoints(mouse);
-    const pointer = points.length > 0 ? points[0] : null;
+    const activeIds = new Set();
+    const pointForId = new Map();
+    points.forEach(pt => {
+        const id = pt.id !== undefined ? pt.id : 'mouse';
+        activeIds.add(id);
+        pointForId.set(id, pt);
+    });
+    
+    const naturalBig = { x: size / 2, y: size / 2 + Math.sin(time) * 15 };
+    if (!empBig.pos) empBig.pos = { x: naturalBig.x, y: naturalBig.y };
+    empSmalls.forEach(s => {
+        if (!s.pos) s.pos = { x: naturalBig.x + 115, y: naturalBig.y };
+    });
 
-    // Distancia/cercanía calculada con la posición del frame anterior (lag de 1 frame, imperceptible)
-    let d = empSmallPos ? Math.hypot(empSmallPos.x - p1.x, empSmallPos.y - p1.y) : 999;
-    let closeness = Math.max(0, 1 - d / 150); // 0 = lejos, 1 = súper cerca
+    for (const id of empDragMap.keys()) {
+        if (!activeIds.has(id)) empDragMap.delete(id);
+    }
+    const takenTargets = new Set(empDragMap.values());
 
-    let sizeP1 = 42 + closeness * 10; // Cuadrado grande
-    let sizeP2 = 22 + closeness * 5;  // Cuadrado chico, siempre menor al grande
+    points.forEach(pt => {
+        const id = pt.id !== undefined ? pt.id : 'mouse';
+        if (empDragMap.has(id)) return; 
 
-    // --- MOVIMIENTO DEL CUADRADO PEQUEÑO ---
-    if (pointer) {
-        // Si todavía no estamos arrastrando, revisamos si el click/touch cayó sobre el cuadrado chico
-        if (!empIsDragging && empSmallPos) {
-            const distToSmall = Math.hypot(pointer.x - empSmallPos.x, pointer.y - empSmallPos.y);
-            if (distToSmall < sizeP2 + 14) empIsDragging = true;
+        let picked = null;
+        empSmalls.forEach((s, idx) => {
+            if (picked !== null || takenTargets.has(idx)) return;
+            if (Math.hypot(pt.x - s.pos.x, pt.y - s.pos.y) < 36) picked = idx;
+        });
+        if (picked === null && !takenTargets.has('big') &&
+            Math.hypot(pt.x - empBig.pos.x, pt.y - empBig.pos.y) < 56) {
+            picked = 'big';
         }
-        if (empIsDragging) {
-            empSmallPos = { x: pointer.x, y: pointer.y };
+        if (picked !== null) {
+            empDragMap.set(id, picked);
+            takenTargets.add(picked);
         }
+    });
+
+    let bigPointerId = null;
+    for (const [id, target] of empDragMap) if (target === 'big') bigPointerId = id;
+
+    if (bigPointerId !== null) {
+        const pt = pointForId.get(bigPointerId);
+        empBig.pos.x = pt.x;
+        empBig.pos.y = pt.y;
+        empBig.dragging = true;
     } else {
-        empIsDragging = false;
+        empBig.pos.x = lerp(empBig.pos.x, naturalBig.x, 0.12);
+        empBig.pos.y = lerp(empBig.pos.y, naturalBig.y, 0.12);
+        empBig.dragging = false;
+    }
+    const p1 = empBig.pos;
+
+    const orbitRadius = 115 + Math.sin(time * 0.37) * 15;
+    const orbitAngle = time * 0.15 + Math.sin(time * 0.1) * 0.5;
+
+    empSmalls.forEach((s, idx) => {
+        let ptrId = null;
+        for (const [id, target] of empDragMap) if (target === idx) ptrId = id;
+        s.dragging = ptrId !== null;
+        if (s.dragging) {
+            const pt = pointForId.get(ptrId);
+            s.pos = { x: pt.x, y: pt.y };
+        } else {
+            const a = orbitAngle + s.phase;
+            s.pos = { x: naturalBig.x + Math.cos(a) * orbitRadius, y: naturalBig.y + Math.sin(a) * orbitRadius };
+        }
+    });
+
+    const closenessOf = (s) => Math.max(0, 1 - Math.hypot(s.pos.x - p1.x, s.pos.y - p1.y) / 150);
+    const closenessA = closenessOf(empSmalls[0]);
+    const closenessB = closenessOf(empSmalls[1]);
+    const overallCloseness = Math.max(closenessA, closenessB);
+
+    const sizeP1 = 42 + overallCloseness * 10;
+
+    // --- Línea de conexión: Aparece solo mientras se arrastra ---
+    empSmalls.forEach((s) => {
+        if (s.dragging) {
+            const dLine = Math.hypot(s.pos.x - p1.x, s.pos.y - p1.y);
+            const closeness = closenessOf(s);
+            ctx.fillStyle = `rgba(${verdeIdentidad}, ${0.25 + closeness * 0.2})`;
+            ctx.save();
+            ctx.translate(p1.x, p1.y);
+            ctx.rotate(Math.atan2(s.pos.y - p1.y, s.pos.x - p1.x));
+            ctx.fillRect(0, -2, dLine, 4);
+            ctx.restore();
+        }
+    });
+
+    let bigNearSmall = false;
+    empSmalls.forEach((s) => {
+        const closeness = closenessOf(s);
+        const sizeP2 = 22 + closeness * 5;
+        s.sizeP2 = sizeP2; 
+
+        const isTouching = Math.abs(p1.x - s.pos.x) < (sizeP1 + sizeP2) &&
+                           Math.abs(p1.y - s.pos.y) < (sizeP1 + sizeP2);
+        if (isTouching) bigNearSmall = true;
+
+        const targetFill = (isTouching && !empBig.dragging) ? 0.9 : 0.08;
+        s.fillLevel = lerp(s.fillLevel, targetFill, 0.15);
+    });
+
+    const outlineTarget = (empBig.dragging && bigNearSmall) ? 1 : 0;
+    empBigOutlineMode = lerp(empBigOutlineMode, outlineTarget, 0.15);
+
+    // CUADRADO GRANDE
+    const bigFillAlpha = (0.6 + overallCloseness * 0.4) * (1 - empBigOutlineMode);
+    if (bigFillAlpha > 0.01) {
+        ctx.fillStyle = `rgba(${verdeIdentidad}, ${bigFillAlpha})`;
+        ctx.fillRect(p1.x - sizeP1, p1.y - sizeP1, sizeP1 * 2, sizeP1 * 2);
     }
 
-    if (!empIsDragging) {
-        // Órbita constante y orgánica, alejada del cuadrado grande para que no se toquen en el estado default
-        const orbitRadius = 135 + Math.sin(time * 0.37) * 15;
-        const orbitAngle = time * 0.5 + Math.sin(time * 0.17) * 0.5;
-        empSmallPos = {
-            x: p1.x + Math.cos(orbitAngle) * orbitRadius,
-            y: p1.y + Math.sin(orbitAngle) * orbitRadius
-        };
+    const bigStrokeWidth = empBigOutlineMode * 3;
+    if (bigStrokeWidth > 0.05) {
+        ctx.strokeStyle = '#a6bda9';
+        ctx.lineWidth = bigStrokeWidth;
+        ctx.strokeRect(p1.x - sizeP1, p1.y - sizeP1, sizeP1 * 2, sizeP1 * 2);
     }
 
-    let p2 = empSmallPos;
+    // CUADRADOS CHICOS
+    empSmalls.forEach((s) => {
+        const sizeP2 = s.sizeP2;
+        ctx.strokeStyle = '#a6bda9';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(s.pos.x - sizeP2, s.pos.y - sizeP2, sizeP2 * 2, sizeP2 * 2);
 
-    // Línea de conexión: solo se dibuja mientras se sostiene el cuadrado pequeño
-    if (empIsDragging) {
-        const dLine = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-        ctx.fillStyle = `rgba(132, 156, 139, ${0.25 + closeness * 0.2})`;
-        ctx.save();
-        ctx.translate(p1.x, p1.y);
-        ctx.rotate(Math.atan2(p2.y - p1.y, p2.x - p1.x));
-        ctx.fillRect(0, -2, dLine, 4);
-        ctx.restore();
-    }
-
-    // CUADRADO GRANDE (P1): Siempre relleno, se intensifica al acercarse
-    ctx.fillStyle = `rgba(132, 156, 139, ${0.6 + closeness * 0.4})`;
-    ctx.fillRect(p1.x - sizeP1, p1.y - sizeP1, sizeP1 * 2, sizeP1 * 2);
-
-    // CUADRADO CHICO (P2): marco fijo (igual al del código viejo), su opacidad nunca cambia
-    ctx.strokeStyle = '#a6bda9';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(p2.x - sizeP2, p2.y - sizeP2, sizeP2 * 2, sizeP2 * 2);
-
-    // LÓGICA DE CONTACTO: Verificamos si los dos cuadrados se están superponiendo (colisión)
-    let isTouching = Math.abs(p1.x - p2.x) < (sizeP1 + sizeP2) &&
-                     Math.abs(p1.y - p2.y) < (sizeP1 + sizeP2);
-
-    // Si se tocan, el objetivo es rellenar al 90% de opacidad, sino queda en el mínimo
-    let targetFill = isTouching ? 0.9 : 0.08;
-    empFillLevel = lerp(empFillLevel, targetFill, 0.15); // Transición suave para que no parpadee de golpe
-
-    // CUADRADO CHICO (P2): relleno interior con opacidad variable (el marco de arriba no cambia)
-    ctx.fillStyle = `rgba(166, 189, 169, ${empFillLevel})`;
-    ctx.fillRect(p2.x - sizeP2, p2.y - sizeP2, sizeP2 * 2, sizeP2 * 2);
+        // ACÁ EL CAMBIO: Ahora heredan la variable verdeIdentidad para su relleno
+        ctx.fillStyle = `rgba(${verdeIdentidad}, ${s.fillLevel})`;
+        ctx.fillRect(s.pos.x - sizeP2, s.pos.y - sizeP2, sizeP2 * 2, sizeP2 * 2);
+    });
 });
 
 // --- COLABORACIÓN ---
@@ -1376,7 +1444,7 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
 
     // 2. Contorno principal por encima
     ctx.strokeStyle = '#7a718c';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2;
     drawTriangleOutline(ctx, cx, cy, finalRadius, 0);
 });
 
