@@ -957,18 +957,16 @@ initCanvas('canvas-empatia', (ctx, size, mouse, time) => {
 
     const sizeP1 = 42 + overallCloseness * 10;
 
-    // --- Línea de conexión: Aparece solo mientras se arrastra ---
+    // --- Línea de conexión: Vuelven a estar siempre visibles ---
     empSmalls.forEach((s) => {
-        if (s.dragging) {
-            const dLine = Math.hypot(s.pos.x - p1.x, s.pos.y - p1.y);
-            const closeness = closenessOf(s);
-            ctx.fillStyle = `rgba(${verdeIdentidad}, ${0.25 + closeness * 0.2})`;
-            ctx.save();
-            ctx.translate(p1.x, p1.y);
-            ctx.rotate(Math.atan2(s.pos.y - p1.y, s.pos.x - p1.x));
-            ctx.fillRect(0, -2, dLine, 4);
-            ctx.restore();
-        }
+        const dLine = Math.hypot(s.pos.x - p1.x, s.pos.y - p1.y);
+        const closeness = closenessOf(s);
+        ctx.fillStyle = `rgba(${verdeIdentidad}, ${0.25 + closeness * 0.2})`;
+        ctx.save();
+        ctx.translate(p1.x, p1.y);
+        ctx.rotate(Math.atan2(s.pos.y - p1.y, s.pos.x - p1.x));
+        ctx.fillRect(0, -2, dLine, 4);
+        ctx.restore();
     });
 
     let bigNearSmall = false;
@@ -1009,7 +1007,6 @@ initCanvas('canvas-empatia', (ctx, size, mouse, time) => {
         ctx.lineWidth = 3;
         ctx.strokeRect(s.pos.x - sizeP2, s.pos.y - sizeP2, sizeP2 * 2, sizeP2 * 2);
 
-        // ACÁ EL CAMBIO: Ahora heredan la variable verdeIdentidad para su relleno
         ctx.fillStyle = `rgba(${verdeIdentidad}, ${s.fillLevel})`;
         ctx.fillRect(s.pos.x - sizeP2, s.pos.y - sizeP2, sizeP2 * 2, sizeP2 * 2);
     });
@@ -1368,6 +1365,9 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
     const cx = size / 2;
     const cy = size / 2;
 
+    // Detectar si estamos interactuando en la vista de detalle
+    const isInDetailView = overlay.classList.contains('active') && currentCanvas && currentCanvas.id === 'canvas-expectativa';
+
     // 1. Detectar número de dedos táctiles o click activo
     let activeTouchesCount = mouse.touches.length > 0
         ? mouse.touches.length
@@ -1378,20 +1378,19 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
         activeTouchesCount = activeKeys.size;
     }
 
-    // Mínimo 6 triángulos pequeños (0 contactos = 6, 1 contacto = 12, 2 contactos = 18, etc.)
+    // Mínimo 6 triángulos pequeños
     const totalTrianglesNeeded = 6 + (activeTouchesCount * 6);
 
-    // Ajustar dinámicamente el pool de triángulos según la interacción táctil
     while (expAmbientTriangles.length < totalTrianglesNeeded) {
         expAmbientTriangles.push({
             angle: Math.random() * Math.PI * 2,
-            dist: 160 + Math.random() * 60,
+            dist: 180 + Math.random() * 60,
             speed: 2.2 + Math.random() * 1.2,
             rotation: Math.random() * Math.PI * 2,
             rotSpeed: (Math.random() - 0.5) * 2,
             size: 11 + Math.random() * 5,
             seed: Math.random() * 100,
-            alphaSpeed: 1.5 + Math.random() * 2.0
+            alphaSpeed: 1.0 + Math.random() * 1.5
         });
     }
 
@@ -1399,16 +1398,17 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
     const isInteracting = activeTouchesCount > 0;
     const currentSpeed = isInteracting ? 4.2 : 2.5;
 
-    // --- CAPA 1 (FONDO): RENDERIZADO DE TRIÁNGULOS PEQUEÑOS ---
-    ctx.lineWidth = 1.8;
+    const resetDist = isInDetailView ? 45 : 60;
+
+    // --- CAPA 1 (FONDO): RENDERIZADO DE TRIÁNGULOS PEQUEÑOS (SOLO BORDE) ---
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
 
     trianglesToDraw.forEach((tri) => {
-        // Viaje convergente hacia el centro
         tri.dist -= (tri.speed * (currentSpeed / 2.5));
         tri.rotation += tri.rotSpeed * 0.03;
 
-        // Reinicio progresivo al tocar/acercarse al triángulo grande central
-        if (tri.dist < 45) {
+        if (tri.dist < resetDist) {
             tri.dist = 210 + Math.random() * 40;
             tri.angle = Math.random() * Math.PI * 2;
         }
@@ -1416,47 +1416,53 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
         const x = cx + Math.cos(tri.angle) * tri.dist;
         const y = cy + Math.sin(tri.angle) * tri.dist;
 
-        // Opacidad orgánica e individual con mínimo de 0.50 (50%)
-        const randomAlpha = 0.50 + ((Math.sin(time * tri.alphaSpeed + tri.seed) + 1) / 2) * 0.45;
-
-        ctx.strokeStyle = `rgba(122, 113, 140, ${randomAlpha})`;
-        ctx.fillStyle = `rgba(122, 113, 140, ${randomAlpha * 0.4})`;
-
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(tri.rotation);
 
-        if (typeof drawSolidTriangle === 'function' && typeof drawTriangleOutline === 'function') {
-            drawSolidTriangle(ctx, 0, 0, tri.size, 0);
-            drawTriangleOutline(ctx, 0, 0, tri.size, 0);
-        } else {
-            // Geometría manual por respaldo si las funciones helper no están disponibles
-            ctx.beginPath();
-            for (let k = 0; k < 3; k++) {
-                const a = (k * 2 * Math.PI) / 3 - Math.PI / 2;
-                const tx = Math.cos(a) * tri.size;
-                const ty = Math.sin(a) * tri.size;
-                if (k === 0) ctx.moveTo(tx, ty);
-                else ctx.lineTo(tx, ty);
-            }
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
+        // Opacidad general fijada al 90%
+        ctx.globalAlpha = 0.90;
+
+        // Borde simétrico y sin relleno
+        ctx.strokeStyle = `rgb(122, 113, 140)`;
+        ctx.lineWidth = 2.2;
+
+        ctx.beginPath();
+        for (let k = 0; k < 3; k++) {
+            const a = (k * 2 * Math.PI) / 3 - Math.PI / 2;
+            const tx = Math.cos(a) * tri.size;
+            const ty = Math.sin(a) * tri.size;
+            if (k === 0) ctx.moveTo(tx, ty);
+            else ctx.lineTo(tx, ty);
         }
+        ctx.closePath();
+
+        ctx.stroke(); // Únicamente dibujamos el contorno
 
         ctx.restore();
     });
 
-    // --- CAPA 2 (FRENTE): RENDERIZADO DEL TRIÁNGULO PRINCIPAL ---
-    
-    // Cálculo de respiración y tamaño
-    const breathSpeed = isInteracting ? 2.5 : 1.2;
+    // --- CAPA INTERMEDIA: RECORTAR / BORRAR LO QUE QUEDA DETRÁS ---
+    const breathSpeed = isInteracting ? 2.8 : 1.5;
     const breathCycle = Math.sin(time * breathSpeed);
-    const breathDepth = isInteracting ? 16 : 6;
-    const baseRadius = 60 + (activeTouchesCount * 10);
+    
+    const breathDepth = isInDetailView 
+        ? (isInteracting ? 16 : 6) 
+        : (isInteracting ? 20 : 12);
+    
+    const baseRadius = isInDetailView 
+        ? (60 + activeTouchesCount * 10) 
+        : (size * 0.22 + activeTouchesCount * 10);
+
     const finalRadius = baseRadius + (breathCycle * breathDepth);
 
-    // 1. Parpadeo e intensidad interior con el mismo tono de los pequeños
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = '#000000';
+    drawSolidTriangle(ctx, cx, cy, finalRadius, 0);
+    ctx.restore();
+
+    // --- CAPA 2 (FRENTE): TRIÁNGULO PRINCIPAL ---
     const blinkSpeed = isInteracting ? 4.5 : 1.5;
     const rawSin = Math.sin(time * blinkSpeed);
     const fillIntensity = Math.max(0, Math.min(1, rawSin * 2.0 + 0.5));
@@ -1466,9 +1472,8 @@ initCanvas('canvas-expectativa', (ctx, size, mouse, time) => {
         drawSolidTriangle(ctx, cx, cy, finalRadius, 0);
     }
 
-    // 2. Contorno principal por encima
     ctx.strokeStyle = '#7a718c';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = isInDetailView ? 3 : 3.5;
     drawTriangleOutline(ctx, cx, cy, finalRadius, 0);
 });
 
