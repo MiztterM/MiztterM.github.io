@@ -663,25 +663,29 @@ initCanvas('canvas-herencia', (ctx, size, mouse, time) => {
 
 // --- CADUCIDAD ---
 let cadNodes = [];
-let cadRespawnCount = 0; // Contador global de desapariciones
+let cadRespawnCount = 0; 
+let cadWasInDetailView = false; // Nueva variable para detectar cuando salimos del detalle
 
 initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
+    // Detectamos si estamos en la vista ampliada
+    const isInDetailView = overlay.classList.contains('active') && currentCanvas && currentCanvas.id === 'canvas-caducidad';
+
     if (cadNodes.length === 0) {
-        // Coordenadas absolutas y tamaños compensados para igualar el peso de Memoria
         const layout = [
-            { x: 90,  y: 205, r: 12, baseAlpha: 0.50 }, // Extremo izquierdo
-            { x: 125, y: 165, r: 18, baseAlpha: 0.70 }, // Arriba centro-izq
-            { x: 140, y: 250, r: 34, baseAlpha: 0.85 }, // Abajo izq (Grande)
-            { x: 190, y: 200, r: 26, baseAlpha: 0.80 }, // Centro
-            { x: 220, y: 255, r: 9,  baseAlpha: 0.40 }, // Abajo centro-der (Pequeñito)
-            { x: 245, y: 145, r: 31, baseAlpha: 0.85 }, // Arriba derecha (Grande)
-            { x: 280, y: 225, r: 18, baseAlpha: 0.65 }, // Medio derecha
-            { x: 310, y: 185, r: 12, baseAlpha: 0.40 }  // Extremo derecho
+            { x: 90,  y: 205, r: 12, baseAlpha: 0.50 }, 
+            { x: 125, y: 165, r: 18, baseAlpha: 0.70 }, 
+            { x: 140, y: 250, r: 34, baseAlpha: 0.85 }, 
+            { x: 190, y: 200, r: 26, baseAlpha: 0.80 }, 
+            { x: 220, y: 255, r: 9,  baseAlpha: 0.40 }, 
+            { x: 245, y: 145, r: 31, baseAlpha: 0.85 }, 
+            { x: 280, y: 225, r: 18, baseAlpha: 0.65 }, 
+            { x: 310, y: 185, r: 12, baseAlpha: 0.40 }  
         ];
 
         layout.forEach((pos, idx) => {
             cadNodes.push({
                 ox: pos.x, oy: pos.y,
+                baseOx: pos.x, baseOy: pos.y, // Guardamos la posición original en su "memoria"
                 baseSize: pos.r,
                 baseAlpha: pos.baseAlpha,
                 state: 'idle',  
@@ -696,19 +700,29 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
         });
     }
 
+    // LÓGICA DE REINICIO: Si estábamos en detalle y ahora no, activamos la animación de vuelta a casa
+    if (cadWasInDetailView && !isInDetailView) {
+        cadNodes.forEach(node => {
+            node.state = 'reset_vanishing';
+        });
+        cadRespawnCount = 0; // Limpiamos la fatiga del sistema
+    }
+    cadWasInDetailView = isInDetailView;
+
     const points = getActivePoints(mouse);
     const pointer = points.length > 0 ? points[0] : null;
 
     cadNodes.forEach((node, idx) => {
-        if (node.state === 'idle') {
-            if (pointer) {
-                let dist = Math.hypot(pointer.x - node.ox, pointer.y - node.oy);
-                if (dist < node.baseSize + 25) {
-                    node.state = 'vanishing';
-                }
+        // Detección de colisión interactiva
+        if (pointer && (node.state === 'idle' || node.state === 'growing')) {
+            let dist = Math.hypot(pointer.x - node.ox, pointer.y - node.oy);
+            if (dist < node.baseSize + 25) {
+                node.state = 'vanishing';
             }
-        } 
-        else if (node.state === 'vanishing') {
+        }
+
+        // --- MÁQUINA DE ESTADOS ---
+        if (node.state === 'vanishing') {
             node.progress -= 0.08; 
             if (node.progress <= 0) {
                 node.progress = 0;
@@ -722,8 +736,26 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
         } 
         else if (node.state === 'growing') {
             let growRate = (cadRespawnCount >= 10) ? (1 / 600) : 0.04;
-            
             node.progress += growRate;
+            if (node.progress >= 1) {
+                node.progress = 1;
+                node.state = 'idle';
+            }
+        }
+        // NUEVO: Estado para desaparecer al cerrar la vista
+        else if (node.state === 'reset_vanishing') {
+            node.progress -= 0.08; 
+            if (node.progress <= 0) {
+                node.progress = 0;
+                node.state = 'reset_growing';
+                // Acá ocurre la magia: les devolvemos su posición base original
+                node.ox = node.baseOx; 
+                node.oy = node.baseOy;
+            }
+        }
+        // NUEVO: Estado para reaparecer en la grilla
+        else if (node.state === 'reset_growing') {
+            node.progress += 0.04; 
             if (node.progress >= 1) {
                 node.progress = 1;
                 node.state = 'idle';
@@ -734,7 +766,7 @@ initCanvas('canvas-caducidad', (ctx, size, mouse, time) => {
         let floatX = Math.cos(time * 0.8 + node.seed) * 2.5;
         let floatY = Math.sin(time * 0.8 + node.seed * 1.5) * 2.5;
 
-        // 2. Achicamiento pronunciado (respiración compensada por el mayor radio base)
+        // 2. Achicamiento pronunciado (respiración)
         let sizePulse = 0.75 + Math.sin(time * node.pulseSpeed + node.pulseOffset) * 0.25;
 
         // 3. Parpadeo leve de opacidad
