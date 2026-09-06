@@ -43,7 +43,7 @@ h1 {
     width: 100%;
 }
 
-/* Tarjetas tipo Polaroid */
+/* Tarjetas */
 .interface-card {
     background-color: #F2F4F7;
     padding: 15px 15px 25px 15px; 
@@ -126,7 +126,7 @@ h1 {
     font-weight: 500; 
     font-size: 0.95rem;
     text-transform: uppercase;
-    letter-spacing: -0.05em; 
+    letter-spacing: -0.02em; 
     cursor: pointer;
     z-index: 1010;
     transition: transform 0.2s ease;
@@ -136,7 +136,7 @@ h1 {
     gap: 6px; 
 }
 
-/* NUEVO: Forzamos que el botón de celu se oculte en escritorio */
+/* que el botón de celu se oculte en escritorio */
 .btn-volver.mob-only {
     display: none;
 }
@@ -218,11 +218,9 @@ h1 {
     
     .system-grid { grid-template-columns: 1fr; max-width: 400px; }
     
-    /* ACÁ AJUSTAMOS EL TÍTULO PRINCIPAL PARA CELULARES */
+    /* TÍTULO PRINCIPAL PARA CELULARES */
     h1 { font-size: 1rem; letter-spacing: -0.5px; }
     .subtitle { font-size: 0.95rem; }
-    
-    /* Ajuste opcional para el título de la vista detalle en celu si lo ves muy grande */
     #detail-title { font-size: 1.9rem; }
 
     .detail-content {
@@ -258,7 +256,7 @@ h1 {
     }
 }
 
-/* --- BOTÓN MODO LÁMINA (SOLO PC > 1005px) --- */
+/* --- BOTÓN VER TODOS (SOLO PC > 1005px) --- */
 #btn-fullscreen-grid {
     position: fixed;
     top: 20px;
@@ -275,7 +273,7 @@ h1 {
     z-index: 900;
     transition: background 0.3s ease, transform 0.2s ease;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    display: block; /* Visible por defecto en pantallas grandes */
+    display: block;
 }
 
 #btn-fullscreen-grid:hover {
@@ -283,7 +281,7 @@ h1 {
     transform: translateY(-2px);
 }
 
-/* --- MODO LÁMINA: VISTA PANORÁMICA DE LAS 9 JUNTAS --- */
+/* --- MODO VER TODOS: VISTA PANORÁMICA DE LAS 9 JUNTAS --- */
 body.fullscreen-grid-mode {
     overflow: hidden; 
     padding: 10px;
